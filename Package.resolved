@@ -1,0 +1,24 @@
+{
+  "originHash" : "c15c78f2856e616d168b783b21b07ce4e33aa19a3894a70c69917ea64933f195",
+  "pins" : [
+    {
+      "identity" : "lighter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Lighter-swift/Lighter.git",
+      "state" : {
+        "revision" : "77dba67c6a47ee02fd78b09306d3b561b6e5a6ef",
+        "version" : "1.4.12"
+      }
+    },
+    {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser.git",
+      "state" : {
+        "revision" : "c5d11a805e765f52ba34ec7284bd4fcd6ba68615",
+        "version" : "1.7.0"
+      }
+    }
+  ],
+  "version" : 3
+}
