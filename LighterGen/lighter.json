@@ -20,6 +20,6 @@
 	},
 	"CodeGeneration": {
 		"generateAsyncFunctions": true,
-		"embedRecordTypesInDatabaseType": true
+		"embedRecordTypesInDatabaseType": false
 	}
 }

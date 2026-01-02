@@ -1,4 +1,4 @@
-// Autocreated by sqlite2swift at 2026-01-02T23:11:36Z
+// Autocreated by sqlite2swift at 2026-01-02T23:58:49Z
 
 import SQLite3
 import Foundation
@@ -65,7 +65,7 @@ public func sqlite3_create_fingerstringdb(
 @discardableResult
 public func sqlite3_task_list_insert(
 	_ db: OpaquePointer!,
-	_ record: inout FingerStringDB.TaskList
+	_ record: inout TaskList
 ) -> Int32
 {
 	let sql = FingerStringDB.useInsertReturning ? TaskList.Schema.insertReturning : TaskList.Schema.insert
@@ -73,10 +73,7 @@ public func sqlite3_task_list_insert(
 	guard sqlite3_prepare_v2(db, sql, -1, &handle, nil) == SQLITE_OK,
 	      let statement = handle else { return sqlite3_errcode(db) }
 	defer { sqlite3_finalize(statement) }
-	return record.bind(
-		to: statement,
-		indices: FingerStringDB.TaskList.Schema.insertParameterIndices
-	) {
+	return record.bind(to: statement, indices: TaskList.Schema.insertParameterIndices) {
 		let rc = sqlite3_step(statement)
 		if rc == SQLITE_DONE {
 			var sql = TaskList.Schema.select
@@ -92,19 +89,13 @@ public func sqlite3_task_list_insert(
 			else if rc != SQLITE_ROW {
 				return sqlite3_errcode(db)
 			}
-			record = FingerStringDB.TaskList(
-				statement,
-				indices: FingerStringDB.TaskList.Schema.selectColumnIndices
-			)
+			record = TaskList(statement, indices: TaskList.Schema.selectColumnIndices)
 			return SQLITE_OK
 		}
 		else if rc != SQLITE_ROW {
 			return sqlite3_errcode(db)
 		}
-		record = FingerStringDB.TaskList(
-			statement,
-			indices: FingerStringDB.TaskList.Schema.selectColumnIndices
-		)
+		record = TaskList(statement, indices: TaskList.Schema.selectColumnIndices)
 		return SQLITE_OK
 	}
 }
@@ -126,20 +117,15 @@ public func sqlite3_task_list_insert(
 /// - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
 @inlinable
 @discardableResult
-public func sqlite3_task_list_update(
-	_ db: OpaquePointer!,
-	_ record: FingerStringDB.TaskList
-) -> Int32
+public func sqlite3_task_list_update(_ db: OpaquePointer!, _ record: TaskList)
+	-> Int32
 {
 	let sql = TaskList.Schema.update
 	var handle : OpaquePointer? = nil
 	guard sqlite3_prepare_v2(db, sql, -1, &handle, nil) == SQLITE_OK,
 	      let statement = handle else { return sqlite3_errcode(db) }
 	defer { sqlite3_finalize(statement) }
-	return record.bind(
-		to: statement,
-		indices: FingerStringDB.TaskList.Schema.updateParameterIndices
-	) {
+	return record.bind(to: statement, indices: TaskList.Schema.updateParameterIndices) {
 		let rc = sqlite3_step(statement)
 		return rc != SQLITE_DONE && rc != SQLITE_ROW ? sqlite3_errcode(db) : SQLITE_OK
 	}
@@ -162,10 +148,8 @@ public func sqlite3_task_list_update(
 /// - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
 @inlinable
 @discardableResult
-public func sqlite3_task_list_delete(
-	_ db: OpaquePointer!,
-	_ record: FingerStringDB.TaskList
-) -> Int32
+public func sqlite3_task_list_delete(_ db: OpaquePointer!, _ record: TaskList)
+	-> Int32
 {
 	let sql = TaskList.Schema.delete
 	var handle : OpaquePointer? = nil
@@ -221,11 +205,11 @@ public func sqlite3_task_lists_fetch(
 	sql customSQL: String? = nil,
 	orderBy orderBySQL: String? = nil,
 	limit: Int? = nil,
-	filter: @escaping ( FingerStringDB.TaskList ) -> Bool
-) -> [ FingerStringDB.TaskList ]?
+	filter: @escaping ( TaskList ) -> Bool
+) -> [ TaskList ]?
 {
 	withUnsafePointer(to: filter) { ( closurePtr ) in
-		guard FingerStringDB.TaskList.Schema.registerSwiftMatcher(
+		guard TaskList.Schema.registerSwiftMatcher(
 			in: db,
 			flags: SQLITE_UTF8,
 			matcher: closurePtr
@@ -233,9 +217,9 @@ public func sqlite3_task_lists_fetch(
 			return nil
 		}
 		defer {
-			FingerStringDB.TaskList.Schema.unregisterSwiftMatcher(in: db, flags: SQLITE_UTF8)
+			TaskList.Schema.unregisterSwiftMatcher(in: db, flags: SQLITE_UTF8)
 		}
-		var sql = customSQL ?? FingerStringDB.TaskList.Schema.matchSelect
+		var sql = customSQL ?? TaskList.Schema.matchSelect
 		if let orderBySQL = orderBySQL {
 			sql.append(" ORDER BY \(orderBySQL)")
 		}
@@ -246,8 +230,8 @@ public func sqlite3_task_lists_fetch(
 		guard sqlite3_prepare_v2(db, sql, -1, &handle, nil) == SQLITE_OK,
 		      let statement = handle else { return nil }
 		defer { sqlite3_finalize(statement) }
-		let indices = customSQL != nil ? FingerStringDB.TaskList.Schema.lookupColumnIndices(in: statement) : FingerStringDB.TaskList.Schema.selectColumnIndices
-		var records = [ FingerStringDB.TaskList ]()
+		let indices = customSQL != nil ? TaskList.Schema.lookupColumnIndices(in: statement) : TaskList.Schema.selectColumnIndices
+		var records = [ TaskList ]()
 		while true {
 			let rc = sqlite3_step(statement)
 			if rc == SQLITE_DONE {
@@ -256,7 +240,7 @@ public func sqlite3_task_lists_fetch(
 			else if rc != SQLITE_ROW {
 				return nil
 			}
-			records.append(FingerStringDB.TaskList(statement, indices: indices))
+			records.append(TaskList(statement, indices: indices))
 		}
 		return records
 	}
@@ -291,9 +275,9 @@ public func sqlite3_task_lists_fetch(
 	sql customSQL: String? = nil,
 	orderBy orderBySQL: String? = nil,
 	limit: Int? = nil
-) -> [ FingerStringDB.TaskList ]?
+) -> [ TaskList ]?
 {
-	var sql = customSQL ?? FingerStringDB.TaskList.Schema.select
+	var sql = customSQL ?? TaskList.Schema.select
 	if let orderBySQL = orderBySQL {
 		sql.append(" ORDER BY \(orderBySQL)")
 	}
@@ -304,8 +288,8 @@ public func sqlite3_task_lists_fetch(
 	guard sqlite3_prepare_v2(db, sql, -1, &handle, nil) == SQLITE_OK,
 	      let statement = handle else { return nil }
 	defer { sqlite3_finalize(statement) }
-	let indices = customSQL != nil ? FingerStringDB.TaskList.Schema.lookupColumnIndices(in: statement) : FingerStringDB.TaskList.Schema.selectColumnIndices
-	var records = [ FingerStringDB.TaskList ]()
+	let indices = customSQL != nil ? TaskList.Schema.lookupColumnIndices(in: statement) : TaskList.Schema.selectColumnIndices
+	var records = [ TaskList ]()
 	while true {
 		let rc = sqlite3_step(statement)
 		if rc == SQLITE_DONE {
@@ -314,7 +298,7 @@ public func sqlite3_task_lists_fetch(
 		else if rc != SQLITE_ROW {
 			return nil
 		}
-		records.append(FingerStringDB.TaskList(statement, indices: indices))
+		records.append(TaskList(statement, indices: indices))
 	}
 	return records
 }
@@ -341,9 +325,9 @@ public func sqlite3_task_list_find(
 	_ db: OpaquePointer!,
 	sql customSQL: String? = nil,
 	_ primaryKey: Int
-) -> FingerStringDB.TaskList?
+) -> TaskList?
 {
-	var sql = customSQL ?? FingerStringDB.TaskList.Schema.select
+	var sql = customSQL ?? TaskList.Schema.select
 	if customSQL != nil {
 		sql.append(#" WHERE "id" = ? LIMIT 1"#)
 	}
@@ -359,14 +343,14 @@ public func sqlite3_task_list_find(
 	else if rc != SQLITE_ROW {
 		return nil
 	}
-	let indices = customSQL != nil ? FingerStringDB.TaskList.Schema.lookupColumnIndices(in: statement) : FingerStringDB.TaskList.Schema.selectColumnIndices
-	return FingerStringDB.TaskList(statement, indices: indices)
+	let indices = customSQL != nil ? TaskList.Schema.lookupColumnIndices(in: statement) : TaskList.Schema.selectColumnIndices
+	return TaskList(statement, indices: indices)
 }
 
-/// Fetches the ``FingerStringDB/TaskItem`` records related to a ``FingerStringDB/TaskList`` (`listId`).
+/// Fetches the ``TaskItem`` records related to a ``TaskList`` (`listId`).
 /// 
-/// This fetches the related ``FingerStringDB/TaskItem`` records using the
-/// ``FingerStringDB/TaskItem/listId`` property.
+/// This fetches the related ``TaskItem`` records using the
+/// ``TaskItem/listId`` property.
 /// 
 /// Example:
 /// ```swift
@@ -376,19 +360,19 @@ public func sqlite3_task_list_find(
 /// 
 /// - Parameters:
 ///   - db: The SQLite database handle (as returned by `sqlite3_open`)
-///   - record: The ``FingerStringDB/TaskList`` record.
+///   - record: The ``TaskList`` record.
 ///   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
 ///   - limit: An optional fetch limit.
-/// - Returns: The related ``FingerStringDB/TaskItem`` records.
+/// - Returns: The related ``TaskItem`` records.
 @inlinable
 public func sqlite3_task_items_fetch(
 	_ db: OpaquePointer!,
-	forList record: FingerStringDB.TaskList,
+	forList record: TaskList,
 	orderBy orderBySQL: String? = nil,
 	limit: Int? = nil
-) -> [ FingerStringDB.TaskItem ]?
+) -> [ TaskItem ]?
 {
-	var sql = FingerStringDB.TaskItem.Schema.select
+	var sql = TaskItem.Schema.select
 	sql.append(#" WHERE "list_id" = ? LIMIT 1"#)
 	if let orderBySQL = orderBySQL {
 		sql.append(" ORDER BY \(orderBySQL)")
@@ -401,8 +385,8 @@ public func sqlite3_task_items_fetch(
 	      let statement = handle else { return nil }
 	defer { sqlite3_finalize(statement) }
 	sqlite3_bind_int64(statement, 1, Int64(record.id))
-	let indices = FingerStringDB.TaskItem.Schema.selectColumnIndices
-	var records = [ FingerStringDB.TaskItem ]()
+	let indices = TaskItem.Schema.selectColumnIndices
+	var records = [ TaskItem ]()
 	while true {
 		let rc = sqlite3_step(statement)
 		if rc == SQLITE_DONE {
@@ -411,7 +395,7 @@ public func sqlite3_task_items_fetch(
 		else if rc != SQLITE_ROW {
 			return nil
 		}
-		records.append(FingerStringDB.TaskItem(statement, indices: indices))
+		records.append(TaskItem(statement, indices: indices))
 	}
 	return records
 }
@@ -435,7 +419,7 @@ public func sqlite3_task_items_fetch(
 @discardableResult
 public func sqlite3_task_item_insert(
 	_ db: OpaquePointer!,
-	_ record: inout FingerStringDB.TaskItem
+	_ record: inout TaskItem
 ) -> Int32
 {
 	let sql = FingerStringDB.useInsertReturning ? TaskItem.Schema.insertReturning : TaskItem.Schema.insert
@@ -443,10 +427,7 @@ public func sqlite3_task_item_insert(
 	guard sqlite3_prepare_v2(db, sql, -1, &handle, nil) == SQLITE_OK,
 	      let statement = handle else { return sqlite3_errcode(db) }
 	defer { sqlite3_finalize(statement) }
-	return record.bind(
-		to: statement,
-		indices: FingerStringDB.TaskItem.Schema.insertParameterIndices
-	) {
+	return record.bind(to: statement, indices: TaskItem.Schema.insertParameterIndices) {
 		let rc = sqlite3_step(statement)
 		if rc == SQLITE_DONE {
 			var sql = TaskItem.Schema.select
@@ -462,19 +443,13 @@ public func sqlite3_task_item_insert(
 			else if rc != SQLITE_ROW {
 				return sqlite3_errcode(db)
 			}
-			record = FingerStringDB.TaskItem(
-				statement,
-				indices: FingerStringDB.TaskItem.Schema.selectColumnIndices
-			)
+			record = TaskItem(statement, indices: TaskItem.Schema.selectColumnIndices)
 			return SQLITE_OK
 		}
 		else if rc != SQLITE_ROW {
 			return sqlite3_errcode(db)
 		}
-		record = FingerStringDB.TaskItem(
-			statement,
-			indices: FingerStringDB.TaskItem.Schema.selectColumnIndices
-		)
+		record = TaskItem(statement, indices: TaskItem.Schema.selectColumnIndices)
 		return SQLITE_OK
 	}
 }
@@ -496,20 +471,15 @@ public func sqlite3_task_item_insert(
 /// - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
 @inlinable
 @discardableResult
-public func sqlite3_task_item_update(
-	_ db: OpaquePointer!,
-	_ record: FingerStringDB.TaskItem
-) -> Int32
+public func sqlite3_task_item_update(_ db: OpaquePointer!, _ record: TaskItem)
+	-> Int32
 {
 	let sql = TaskItem.Schema.update
 	var handle : OpaquePointer? = nil
 	guard sqlite3_prepare_v2(db, sql, -1, &handle, nil) == SQLITE_OK,
 	      let statement = handle else { return sqlite3_errcode(db) }
 	defer { sqlite3_finalize(statement) }
-	return record.bind(
-		to: statement,
-		indices: FingerStringDB.TaskItem.Schema.updateParameterIndices
-	) {
+	return record.bind(to: statement, indices: TaskItem.Schema.updateParameterIndices) {
 		let rc = sqlite3_step(statement)
 		return rc != SQLITE_DONE && rc != SQLITE_ROW ? sqlite3_errcode(db) : SQLITE_OK
 	}
@@ -532,10 +502,8 @@ public func sqlite3_task_item_update(
 /// - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
 @inlinable
 @discardableResult
-public func sqlite3_task_item_delete(
-	_ db: OpaquePointer!,
-	_ record: FingerStringDB.TaskItem
-) -> Int32
+public func sqlite3_task_item_delete(_ db: OpaquePointer!, _ record: TaskItem)
+	-> Int32
 {
 	let sql = TaskItem.Schema.delete
 	var handle : OpaquePointer? = nil
@@ -591,11 +559,11 @@ public func sqlite3_task_items_fetch(
 	sql customSQL: String? = nil,
 	orderBy orderBySQL: String? = nil,
 	limit: Int? = nil,
-	filter: @escaping ( FingerStringDB.TaskItem ) -> Bool
-) -> [ FingerStringDB.TaskItem ]?
+	filter: @escaping ( TaskItem ) -> Bool
+) -> [ TaskItem ]?
 {
 	withUnsafePointer(to: filter) { ( closurePtr ) in
-		guard FingerStringDB.TaskItem.Schema.registerSwiftMatcher(
+		guard TaskItem.Schema.registerSwiftMatcher(
 			in: db,
 			flags: SQLITE_UTF8,
 			matcher: closurePtr
@@ -603,9 +571,9 @@ public func sqlite3_task_items_fetch(
 			return nil
 		}
 		defer {
-			FingerStringDB.TaskItem.Schema.unregisterSwiftMatcher(in: db, flags: SQLITE_UTF8)
+			TaskItem.Schema.unregisterSwiftMatcher(in: db, flags: SQLITE_UTF8)
 		}
-		var sql = customSQL ?? FingerStringDB.TaskItem.Schema.matchSelect
+		var sql = customSQL ?? TaskItem.Schema.matchSelect
 		if let orderBySQL = orderBySQL {
 			sql.append(" ORDER BY \(orderBySQL)")
 		}
@@ -616,8 +584,8 @@ public func sqlite3_task_items_fetch(
 		guard sqlite3_prepare_v2(db, sql, -1, &handle, nil) == SQLITE_OK,
 		      let statement = handle else { return nil }
 		defer { sqlite3_finalize(statement) }
-		let indices = customSQL != nil ? FingerStringDB.TaskItem.Schema.lookupColumnIndices(in: statement) : FingerStringDB.TaskItem.Schema.selectColumnIndices
-		var records = [ FingerStringDB.TaskItem ]()
+		let indices = customSQL != nil ? TaskItem.Schema.lookupColumnIndices(in: statement) : TaskItem.Schema.selectColumnIndices
+		var records = [ TaskItem ]()
 		while true {
 			let rc = sqlite3_step(statement)
 			if rc == SQLITE_DONE {
@@ -626,7 +594,7 @@ public func sqlite3_task_items_fetch(
 			else if rc != SQLITE_ROW {
 				return nil
 			}
-			records.append(FingerStringDB.TaskItem(statement, indices: indices))
+			records.append(TaskItem(statement, indices: indices))
 		}
 		return records
 	}
@@ -661,9 +629,9 @@ public func sqlite3_task_items_fetch(
 	sql customSQL: String? = nil,
 	orderBy orderBySQL: String? = nil,
 	limit: Int? = nil
-) -> [ FingerStringDB.TaskItem ]?
+) -> [ TaskItem ]?
 {
-	var sql = customSQL ?? FingerStringDB.TaskItem.Schema.select
+	var sql = customSQL ?? TaskItem.Schema.select
 	if let orderBySQL = orderBySQL {
 		sql.append(" ORDER BY \(orderBySQL)")
 	}
@@ -674,8 +642,8 @@ public func sqlite3_task_items_fetch(
 	guard sqlite3_prepare_v2(db, sql, -1, &handle, nil) == SQLITE_OK,
 	      let statement = handle else { return nil }
 	defer { sqlite3_finalize(statement) }
-	let indices = customSQL != nil ? FingerStringDB.TaskItem.Schema.lookupColumnIndices(in: statement) : FingerStringDB.TaskItem.Schema.selectColumnIndices
-	var records = [ FingerStringDB.TaskItem ]()
+	let indices = customSQL != nil ? TaskItem.Schema.lookupColumnIndices(in: statement) : TaskItem.Schema.selectColumnIndices
+	var records = [ TaskItem ]()
 	while true {
 		let rc = sqlite3_step(statement)
 		if rc == SQLITE_DONE {
@@ -684,7 +652,7 @@ public func sqlite3_task_items_fetch(
 		else if rc != SQLITE_ROW {
 			return nil
 		}
-		records.append(FingerStringDB.TaskItem(statement, indices: indices))
+		records.append(TaskItem(statement, indices: indices))
 	}
 	return records
 }
@@ -711,9 +679,9 @@ public func sqlite3_task_item_find(
 	_ db: OpaquePointer!,
 	sql customSQL: String? = nil,
 	_ primaryKey: Int
-) -> FingerStringDB.TaskItem?
+) -> TaskItem?
 {
-	var sql = customSQL ?? FingerStringDB.TaskItem.Schema.select
+	var sql = customSQL ?? TaskItem.Schema.select
 	if customSQL != nil {
 		sql.append(#" WHERE "id" = ? LIMIT 1"#)
 	}
@@ -729,8 +697,8 @@ public func sqlite3_task_item_find(
 	else if rc != SQLITE_ROW {
 		return nil
 	}
-	let indices = customSQL != nil ? FingerStringDB.TaskItem.Schema.lookupColumnIndices(in: statement) : FingerStringDB.TaskItem.Schema.selectColumnIndices
-	return FingerStringDB.TaskItem(statement, indices: indices)
+	let indices = customSQL != nil ? TaskItem.Schema.lookupColumnIndices(in: statement) : TaskItem.Schema.selectColumnIndices
+	return TaskItem(statement, indices: indices)
 }
 
 /// Fetch the ``TaskList`` record related to an ``TaskItem`` (`listId`).
@@ -749,12 +717,10 @@ public func sqlite3_task_item_find(
 ///   - record: The ``TaskItem`` record.
 /// - Returns: The related ``TaskList`` record, or `nil` if not found/error.
 @inlinable
-public func sqlite3_task_list_find(
-	_ db: OpaquePointer!,
-	`for` record: FingerStringDB.TaskItem
-) -> FingerStringDB.TaskList?
+public func sqlite3_task_list_find(_ db: OpaquePointer!, `for` record: TaskItem)
+	-> TaskList?
 {
-	var sql = FingerStringDB.TaskList.Schema.select
+	var sql = TaskList.Schema.select
 	sql.append(#" WHERE "id" = ? LIMIT 1"#)
 	var handle : OpaquePointer? = nil
 	guard sqlite3_prepare_v2(db, sql, -1, &handle, nil) == SQLITE_OK,
@@ -768,8 +734,8 @@ public func sqlite3_task_list_find(
 	else if rc != SQLITE_ROW {
 		return nil
 	}
-	let indices = FingerStringDB.TaskList.Schema.selectColumnIndices
-	return FingerStringDB.TaskList(statement, indices: indices)
+	let indices = TaskList.Schema.selectColumnIndices
+	return TaskList(statement, indices: indices)
 }
 
 /// Fetch the ``TaskItem`` record related to itself (`parentId`).
@@ -790,10 +756,10 @@ public func sqlite3_task_list_find(
 @inlinable
 public func sqlite3_task_item_find(
 	_ db: OpaquePointer!,
-	forParent record: FingerStringDB.TaskItem
-) -> FingerStringDB.TaskItem?
+	forParent record: TaskItem
+) -> TaskItem?
 {
-	var sql = FingerStringDB.TaskItem.Schema.select
+	var sql = TaskItem.Schema.select
 	sql.append(#" WHERE "id" = ? LIMIT 1"#)
 	var handle : OpaquePointer? = nil
 	guard sqlite3_prepare_v2(db, sql, -1, &handle, nil) == SQLITE_OK,
@@ -812,8 +778,8 @@ public func sqlite3_task_item_find(
 	else if rc != SQLITE_ROW {
 		return nil
 	}
-	let indices = FingerStringDB.TaskItem.Schema.selectColumnIndices
-	return FingerStringDB.TaskItem(statement, indices: indices)
+	let indices = TaskItem.Schema.selectColumnIndices
+	return TaskItem(statement, indices: indices)
 }
 
 /// Fetch the ``TaskItem`` record related to itself (`nextId`).
@@ -832,12 +798,10 @@ public func sqlite3_task_item_find(
 ///   - record: The ``TaskItem`` record.
 /// - Returns: The related ``TaskItem`` record, or `nil` if not found/error.
 @inlinable
-public func sqlite3_task_item_find(
-	_ db: OpaquePointer!,
-	forNext record: FingerStringDB.TaskItem
-) -> FingerStringDB.TaskItem?
+public func sqlite3_task_item_find(_ db: OpaquePointer!, forNext record: TaskItem)
+	-> TaskItem?
 {
-	var sql = FingerStringDB.TaskItem.Schema.select
+	var sql = TaskItem.Schema.select
 	sql.append(#" WHERE "id" = ? LIMIT 1"#)
 	var handle : OpaquePointer? = nil
 	guard sqlite3_prepare_v2(db, sql, -1, &handle, nil) == SQLITE_OK,
@@ -856,14 +820,14 @@ public func sqlite3_task_item_find(
 	else if rc != SQLITE_ROW {
 		return nil
 	}
-	let indices = FingerStringDB.TaskItem.Schema.selectColumnIndices
-	return FingerStringDB.TaskItem(statement, indices: indices)
+	let indices = TaskItem.Schema.selectColumnIndices
+	return TaskItem(statement, indices: indices)
 }
 
-/// Fetches the ``FingerStringDB/TaskItem`` records related to itself (`parentId`).
+/// Fetches the ``TaskItem`` records related to itself (`parentId`).
 /// 
-/// This fetches the related ``FingerStringDB/TaskItem`` records using the
-/// ``FingerStringDB/TaskItem/parentId`` property.
+/// This fetches the related ``TaskItem`` records using the
+/// ``TaskItem/parentId`` property.
 /// 
 /// Example:
 /// ```swift
@@ -873,19 +837,19 @@ public func sqlite3_task_item_find(
 /// 
 /// - Parameters:
 ///   - db: The SQLite database handle (as returned by `sqlite3_open`)
-///   - record: The ``FingerStringDB/TaskItem`` record.
+///   - record: The ``TaskItem`` record.
 ///   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
 ///   - limit: An optional fetch limit.
-/// - Returns: The related ``FingerStringDB/TaskItem`` records.
+/// - Returns: The related ``TaskItem`` records.
 @inlinable
 public func sqlite3_task_items_fetch(
 	_ db: OpaquePointer!,
-	forParent record: FingerStringDB.TaskItem,
+	forParent record: TaskItem,
 	orderBy orderBySQL: String? = nil,
 	limit: Int? = nil
-) -> [ FingerStringDB.TaskItem ]?
+) -> [ TaskItem ]?
 {
-	var sql = FingerStringDB.TaskItem.Schema.select
+	var sql = TaskItem.Schema.select
 	sql.append(#" WHERE "parent_id" = ? LIMIT 1"#)
 	if let orderBySQL = orderBySQL {
 		sql.append(" ORDER BY \(orderBySQL)")
@@ -898,8 +862,8 @@ public func sqlite3_task_items_fetch(
 	      let statement = handle else { return nil }
 	defer { sqlite3_finalize(statement) }
 	sqlite3_bind_int64(statement, 1, Int64(record.id))
-	let indices = FingerStringDB.TaskItem.Schema.selectColumnIndices
-	var records = [ FingerStringDB.TaskItem ]()
+	let indices = TaskItem.Schema.selectColumnIndices
+	var records = [ TaskItem ]()
 	while true {
 		let rc = sqlite3_step(statement)
 		if rc == SQLITE_DONE {
@@ -908,15 +872,15 @@ public func sqlite3_task_items_fetch(
 		else if rc != SQLITE_ROW {
 			return nil
 		}
-		records.append(FingerStringDB.TaskItem(statement, indices: indices))
+		records.append(TaskItem(statement, indices: indices))
 	}
 	return records
 }
 
-/// Fetches the ``FingerStringDB/TaskItem`` records related to itself (`nextId`).
+/// Fetches the ``TaskItem`` records related to itself (`nextId`).
 /// 
-/// This fetches the related ``FingerStringDB/TaskItem`` records using the
-/// ``FingerStringDB/TaskItem/nextId`` property.
+/// This fetches the related ``TaskItem`` records using the
+/// ``TaskItem/nextId`` property.
 /// 
 /// Example:
 /// ```swift
@@ -926,19 +890,19 @@ public func sqlite3_task_items_fetch(
 /// 
 /// - Parameters:
 ///   - db: The SQLite database handle (as returned by `sqlite3_open`)
-///   - record: The ``FingerStringDB/TaskItem`` record.
+///   - record: The ``TaskItem`` record.
 ///   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
 ///   - limit: An optional fetch limit.
-/// - Returns: The related ``FingerStringDB/TaskItem`` records.
+/// - Returns: The related ``TaskItem`` records.
 @inlinable
 public func sqlite3_task_items_fetch(
 	_ db: OpaquePointer!,
-	forNext record: FingerStringDB.TaskItem,
+	forNext record: TaskItem,
 	orderBy orderBySQL: String? = nil,
 	limit: Int? = nil
-) -> [ FingerStringDB.TaskItem ]?
+) -> [ TaskItem ]?
 {
-	var sql = FingerStringDB.TaskItem.Schema.select
+	var sql = TaskItem.Schema.select
 	sql.append(#" WHERE "next_id" = ? LIMIT 1"#)
 	if let orderBySQL = orderBySQL {
 		sql.append(" ORDER BY \(orderBySQL)")
@@ -951,8 +915,8 @@ public func sqlite3_task_items_fetch(
 	      let statement = handle else { return nil }
 	defer { sqlite3_finalize(statement) }
 	sqlite3_bind_int64(statement, 1, Int64(record.id))
-	let indices = FingerStringDB.TaskItem.Schema.selectColumnIndices
-	var records = [ FingerStringDB.TaskItem ]()
+	let indices = TaskItem.Schema.selectColumnIndices
+	var records = [ TaskItem ]()
 	while true {
 		let rc = sqlite3_step(statement)
 		if rc == SQLITE_DONE {
@@ -961,7 +925,7 @@ public func sqlite3_task_items_fetch(
 		else if rc != SQLITE_ROW {
 			return nil
 		}
-		records.append(FingerStringDB.TaskItem(statement, indices: indices))
+		records.append(TaskItem(statement, indices: indices))
 	}
 	return records
 }
@@ -1039,231 +1003,6 @@ public struct FingerStringDB : SQLDatabase, SQLDatabaseAsyncChangeOperations, SQ
 		public let taskItems = TaskItem.self
 	}
 	
-	/// Record representing the `task_list` SQL table.
-	/// 
-	/// Record types represent rows within tables&views in a SQLite database.
-	/// They are returned by the functions or queries/filters generated by
-	/// Enlighter.
-	/// 
-	/// ### Examples
-	/// 
-	/// Perform record operations on ``TaskList`` records:
-	/// ```swift
-	/// let records = try await db.taskLists.filter(orderBy: \.slug) {
-	///   $0.slug != nil
-	/// }
-	/// 
-	/// try await db.transaction { tx in
-	///   var record = try tx.taskLists.find(2) // find by primaryKey
-	///   
-	///   record.slug = "Hunt"
-	///   try tx.update(record)
-	/// 
-	///   let newRecord = try tx.insert(record)
-	///   try tx.delete(newRecord)
-	/// }
-	/// ```
-	/// 
-	/// Perform column selects on the `task_list` table:
-	/// ```swift
-	/// let values = try await db.select(from: \.taskLists, \.slug) {
-	///   $0.in([ 2, 3 ])
-	/// }
-	/// ```
-	/// 
-	/// Perform low level operations on ``TaskList`` records:
-	/// ```swift
-	/// var db : OpaquePointer?
-	/// sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE, nil)
-	/// 
-	/// var records = sqlite3_task_lists_fetch(db, orderBy: "slug", limit: 5) {
-	///   $0.slug != nil
-	/// }!
-	/// records[1].slug = "Hunt"
-	/// sqlite3_task_lists_update(db, records[1])
-	/// 
-	/// sqlite3_task_lists_delete(db, records[0])
-	/// sqlite3_task_lists_insert(db, records[0]) // re-add
-	/// ```
-	/// 
-	/// ### SQL
-	/// 
-	/// The SQL used to create the table associated with the record:
-	/// ```sql
-	/// CREATE TABLE task_list (
-	/// 	id INTEGER PRIMARY KEY NOT NULL,
-	/// 	slug TEXT UNIQUE NOT NULL,
-	/// 	title TEXT,
-	/// 	description TEXT,
-	/// 	first_task_id INTEGER
-	/// )
-	/// ```
-	public struct TaskList : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
-		
-		/// Static SQL type information for the ``TaskList`` record.
-		public static let schema = Schema()
-		
-		/// Primary key `id` (`INTEGER`), required.
-		public var id : Int
-		
-		/// Column `slug` (`TEXT`), required.
-		public var slug : String
-		
-		/// Column `title` (`TEXT`), optional (default: `nil`).
-		public var title : String?
-		
-		/// Column `description` (`TEXT`), optional (default: `nil`).
-		public var description : String?
-		
-		/// Column `first_task_id` (`INTEGER`), optional (default: `nil`).
-		public var firstTaskId : Int?
-		
-		/// Initialize a new ``TaskList`` record.
-		/// 
-		/// - Parameters:
-		///   - id: Primary key `id` (`INTEGER`), required.
-		///   - slug: Column `slug` (`TEXT`), required.
-		///   - title: Column `title` (`TEXT`), optional (default: `nil`).
-		///   - description: Column `description` (`TEXT`), optional (default: `nil`).
-		///   - firstTaskId: Column `first_task_id` (`INTEGER`), optional (default: `nil`).
-		@inlinable
-		public init(
-			id: Int = Int.min,
-			slug: String,
-			title: String? = nil,
-			description: String? = nil,
-			firstTaskId: Int? = nil
-		)
-		{
-			self.id = id
-			self.slug = slug
-			self.title = title
-			self.description = description
-			self.firstTaskId = firstTaskId
-		}
-	}
-	
-	/// Record representing the `task_item` SQL table.
-	/// 
-	/// Record types represent rows within tables&views in a SQLite database.
-	/// They are returned by the functions or queries/filters generated by
-	/// Enlighter.
-	/// 
-	/// ### Examples
-	/// 
-	/// Perform record operations on ``TaskItem`` records:
-	/// ```swift
-	/// let records = try await db.taskItems.filter(orderBy: \.itemId) {
-	///   $0.itemId != nil
-	/// }
-	/// 
-	/// try await db.transaction { tx in
-	///   var record = try tx.taskItems.find(2) // find by primaryKey
-	///   
-	///   record.itemId = "Hunt"
-	///   try tx.update(record)
-	/// 
-	///   let newRecord = try tx.insert(record)
-	///   try tx.delete(newRecord)
-	/// }
-	/// ```
-	/// 
-	/// Perform column selects on the `task_item` table:
-	/// ```swift
-	/// let values = try await db.select(from: \.taskItems, \.itemId) {
-	///   $0.in([ 2, 3 ])
-	/// }
-	/// ```
-	/// 
-	/// Perform low level operations on ``TaskItem`` records:
-	/// ```swift
-	/// var db : OpaquePointer?
-	/// sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE, nil)
-	/// 
-	/// var records = sqlite3_task_items_fetch(db, orderBy: "itemId", limit: 5) {
-	///   $0.itemId != nil
-	/// }!
-	/// records[1].itemId = "Hunt"
-	/// sqlite3_task_items_update(db, records[1])
-	/// 
-	/// sqlite3_task_items_delete(db, records[0])
-	/// sqlite3_task_items_insert(db, records[0]) // re-add
-	/// ```
-	/// 
-	/// ### SQL
-	/// 
-	/// The SQL used to create the table associated with the record:
-	/// ```sql
-	/// CREATE TABLE task_item (
-	/// 	id INTEGER PRIMARY KEY NOT NULL,
-	/// 	list_id INTEGER NOT NULL,
-	/// 	parent_id INTEGER,
-	/// 	next_id INTEGER,
-	/// 	item_id TEXT NOT NULL,
-	/// 	label TEXT NOT NULL,
-	/// 	note TEXT,
-	/// 	FOREIGN KEY(list_id) REFERENCES task_list(id),
-	/// 	FOREIGN KEY(parent_id) REFERENCES task_item(id),
-	/// 	FOREIGN KEY(next_id) REFERENCES task_item(id)
-	/// )
-	/// ```
-	public struct TaskItem : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
-		
-		/// Static SQL type information for the ``TaskItem`` record.
-		public static let schema = Schema()
-		
-		/// Primary key `id` (`INTEGER`), required.
-		public var id : Int
-		
-		/// Column `list_id` (`INTEGER`), required.
-		public var listId : Int
-		
-		/// Column `parent_id` (`INTEGER`), optional (default: `nil`).
-		public var parentId : Int?
-		
-		/// Column `next_id` (`INTEGER`), optional (default: `nil`).
-		public var nextId : Int?
-		
-		/// Column `item_id` (`TEXT`), required.
-		public var itemId : String
-		
-		/// Column `label` (`TEXT`), required.
-		public var label : String
-		
-		/// Column `note` (`TEXT`), optional (default: `nil`).
-		public var note : String?
-		
-		/// Initialize a new ``TaskItem`` record.
-		/// 
-		/// - Parameters:
-		///   - id: Primary key `id` (`INTEGER`), required.
-		///   - listId: Column `list_id` (`INTEGER`), required.
-		///   - parentId: Column `parent_id` (`INTEGER`), optional (default: `nil`).
-		///   - nextId: Column `next_id` (`INTEGER`), optional (default: `nil`).
-		///   - itemId: Column `item_id` (`TEXT`), required.
-		///   - label: Column `label` (`TEXT`), required.
-		///   - note: Column `note` (`TEXT`), optional (default: `nil`).
-		@inlinable
-		public init(
-			id: Int = Int.min,
-			listId: Int,
-			parentId: Int? = nil,
-			nextId: Int? = nil,
-			itemId: String,
-			label: String,
-			note: String? = nil
-		)
-		{
-			self.id = id
-			self.listId = listId
-			self.parentId = parentId
-			self.nextId = nextId
-			self.itemId = itemId
-			self.label = label
-			self.note = note
-		}
-	}
-	
 	/// Property based access to the ``RecordTypes-swift.struct``.
 	public static let recordTypes = RecordTypes()
 	
@@ -1282,8 +1021,8 @@ public struct FingerStringDB : SQLDatabase, SQLDatabaseAsyncChangeOperations, SQ
 	@inlinable
 	public static var creationSQL : String {
 		var sql = ""
-		sql.append(FingerStringDB.TaskList.Schema.create)
-		sql.append(FingerStringDB.TaskItem.Schema.create)
+		sql.append(TaskList.Schema.create)
+		sql.append(TaskItem.Schema.create)
 		return sql
 	}
 	
@@ -1351,7 +1090,232 @@ public struct FingerStringDB : SQLDatabase, SQLDatabaseAsyncChangeOperations, SQ
 	}
 }
 
-public extension FingerStringDB.TaskList {
+/// Record representing the `task_list` SQL table.
+/// 
+/// Record types represent rows within tables&views in a SQLite database.
+/// They are returned by the functions or queries/filters generated by
+/// Enlighter.
+/// 
+/// ### Examples
+/// 
+/// Perform record operations on ``TaskList`` records:
+/// ```swift
+/// let records = try await db.taskLists.filter(orderBy: \.slug) {
+///   $0.slug != nil
+/// }
+/// 
+/// try await db.transaction { tx in
+///   var record = try tx.taskLists.find(2) // find by primaryKey
+///   
+///   record.slug = "Hunt"
+///   try tx.update(record)
+/// 
+///   let newRecord = try tx.insert(record)
+///   try tx.delete(newRecord)
+/// }
+/// ```
+/// 
+/// Perform column selects on the `task_list` table:
+/// ```swift
+/// let values = try await db.select(from: \.taskLists, \.slug) {
+///   $0.in([ 2, 3 ])
+/// }
+/// ```
+/// 
+/// Perform low level operations on ``TaskList`` records:
+/// ```swift
+/// var db : OpaquePointer?
+/// sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE, nil)
+/// 
+/// var records = sqlite3_task_lists_fetch(db, orderBy: "slug", limit: 5) {
+///   $0.slug != nil
+/// }!
+/// records[1].slug = "Hunt"
+/// sqlite3_task_lists_update(db, records[1])
+/// 
+/// sqlite3_task_lists_delete(db, records[0])
+/// sqlite3_task_lists_insert(db, records[0]) // re-add
+/// ```
+/// 
+/// ### SQL
+/// 
+/// The SQL used to create the table associated with the record:
+/// ```sql
+/// CREATE TABLE task_list (
+/// 	id INTEGER PRIMARY KEY NOT NULL,
+/// 	slug TEXT UNIQUE NOT NULL,
+/// 	title TEXT,
+/// 	description TEXT,
+/// 	first_task_id INTEGER
+/// )
+/// ```
+public struct TaskList : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
+	
+	/// Static SQL type information for the ``TaskList`` record.
+	public static let schema = Schema()
+	
+	/// Primary key `id` (`INTEGER`), required.
+	public var id : Int
+	
+	/// Column `slug` (`TEXT`), required.
+	public var slug : String
+	
+	/// Column `title` (`TEXT`), optional (default: `nil`).
+	public var title : String?
+	
+	/// Column `description` (`TEXT`), optional (default: `nil`).
+	public var description : String?
+	
+	/// Column `first_task_id` (`INTEGER`), optional (default: `nil`).
+	public var firstTaskId : Int?
+	
+	/// Initialize a new ``TaskList`` record.
+	/// 
+	/// - Parameters:
+	///   - id: Primary key `id` (`INTEGER`), required.
+	///   - slug: Column `slug` (`TEXT`), required.
+	///   - title: Column `title` (`TEXT`), optional (default: `nil`).
+	///   - description: Column `description` (`TEXT`), optional (default: `nil`).
+	///   - firstTaskId: Column `first_task_id` (`INTEGER`), optional (default: `nil`).
+	@inlinable
+	public init(
+		id: Int = Int.min,
+		slug: String,
+		title: String? = nil,
+		description: String? = nil,
+		firstTaskId: Int? = nil
+	)
+	{
+		self.id = id
+		self.slug = slug
+		self.title = title
+		self.description = description
+		self.firstTaskId = firstTaskId
+	}
+}
+
+/// Record representing the `task_item` SQL table.
+/// 
+/// Record types represent rows within tables&views in a SQLite database.
+/// They are returned by the functions or queries/filters generated by
+/// Enlighter.
+/// 
+/// ### Examples
+/// 
+/// Perform record operations on ``TaskItem`` records:
+/// ```swift
+/// let records = try await db.taskItems.filter(orderBy: \.itemId) {
+///   $0.itemId != nil
+/// }
+/// 
+/// try await db.transaction { tx in
+///   var record = try tx.taskItems.find(2) // find by primaryKey
+///   
+///   record.itemId = "Hunt"
+///   try tx.update(record)
+/// 
+///   let newRecord = try tx.insert(record)
+///   try tx.delete(newRecord)
+/// }
+/// ```
+/// 
+/// Perform column selects on the `task_item` table:
+/// ```swift
+/// let values = try await db.select(from: \.taskItems, \.itemId) {
+///   $0.in([ 2, 3 ])
+/// }
+/// ```
+/// 
+/// Perform low level operations on ``TaskItem`` records:
+/// ```swift
+/// var db : OpaquePointer?
+/// sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE, nil)
+/// 
+/// var records = sqlite3_task_items_fetch(db, orderBy: "itemId", limit: 5) {
+///   $0.itemId != nil
+/// }!
+/// records[1].itemId = "Hunt"
+/// sqlite3_task_items_update(db, records[1])
+/// 
+/// sqlite3_task_items_delete(db, records[0])
+/// sqlite3_task_items_insert(db, records[0]) // re-add
+/// ```
+/// 
+/// ### SQL
+/// 
+/// The SQL used to create the table associated with the record:
+/// ```sql
+/// CREATE TABLE task_item (
+/// 	id INTEGER PRIMARY KEY NOT NULL,
+/// 	list_id INTEGER NOT NULL,
+/// 	parent_id INTEGER,
+/// 	next_id INTEGER,
+/// 	item_id TEXT UNIQUE NOT NULL,
+/// 	label TEXT NOT NULL,
+/// 	note TEXT,
+/// 	FOREIGN KEY(list_id) REFERENCES task_list(id),
+/// 	FOREIGN KEY(parent_id) REFERENCES task_item(id),
+/// 	FOREIGN KEY(next_id) REFERENCES task_item(id)
+/// )
+/// ```
+public struct TaskItem : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
+	
+	/// Static SQL type information for the ``TaskItem`` record.
+	public static let schema = Schema()
+	
+	/// Primary key `id` (`INTEGER`), required.
+	public var id : Int
+	
+	/// Column `list_id` (`INTEGER`), required.
+	public var listId : Int
+	
+	/// Column `parent_id` (`INTEGER`), optional (default: `nil`).
+	public var parentId : Int?
+	
+	/// Column `next_id` (`INTEGER`), optional (default: `nil`).
+	public var nextId : Int?
+	
+	/// Column `item_id` (`TEXT`), required.
+	public var itemId : String
+	
+	/// Column `label` (`TEXT`), required.
+	public var label : String
+	
+	/// Column `note` (`TEXT`), optional (default: `nil`).
+	public var note : String?
+	
+	/// Initialize a new ``TaskItem`` record.
+	/// 
+	/// - Parameters:
+	///   - id: Primary key `id` (`INTEGER`), required.
+	///   - listId: Column `list_id` (`INTEGER`), required.
+	///   - parentId: Column `parent_id` (`INTEGER`), optional (default: `nil`).
+	///   - nextId: Column `next_id` (`INTEGER`), optional (default: `nil`).
+	///   - itemId: Column `item_id` (`TEXT`), required.
+	///   - label: Column `label` (`TEXT`), required.
+	///   - note: Column `note` (`TEXT`), optional (default: `nil`).
+	@inlinable
+	public init(
+		id: Int = Int.min,
+		listId: Int,
+		parentId: Int? = nil,
+		nextId: Int? = nil,
+		itemId: String,
+		label: String,
+		note: String? = nil
+	)
+	{
+		self.id = id
+		self.listId = listId
+		self.parentId = parentId
+		self.nextId = nextId
+		self.itemId = itemId
+		self.label = label
+		self.note = note
+	}
+}
+
+public extension TaskList {
 	
 	/// Static type information for the ``TaskList`` record (`task_list` SQL table).
 	/// 
@@ -1361,8 +1325,8 @@ public extension FingerStringDB.TaskList {
 	struct Schema : SQLKeyedTableSchema, SQLSwiftMatchableSchema, SQLCreatableSchema {
 		
 		public typealias PropertyIndices = ( idx_id: Int32, idx_slug: Int32, idx_title: Int32, idx_description: Int32, idx_firstTaskId: Int32 )
-		public typealias RecordType = FingerStringDB.TaskList
-		public typealias MatchClosureType = ( FingerStringDB.TaskList ) -> Bool
+		public typealias RecordType = TaskList
+		public typealias MatchClosureType = ( TaskList ) -> Bool
 		
 		/// The SQL table name associated with the ``TaskList`` record.
 		public static let externalName = "task_list"
@@ -1371,10 +1335,10 @@ public extension FingerStringDB.TaskList {
 		public static let columnCount : Int32 = 5
 		
 		/// Information on the records primary key (``TaskList/id``).
-		public static let primaryKeyColumn = MappedColumn<FingerStringDB.TaskList, Int>(
+		public static let primaryKeyColumn = MappedColumn<TaskList, Int>(
 			externalName: "id",
 			defaultValue: -1,
-			keyPath: \FingerStringDB.TaskList.id
+			keyPath: \TaskList.id
 		)
 		
 		/// The SQL used to create the `task_list` table.
@@ -1487,8 +1451,8 @@ public extension FingerStringDB.TaskList {
 			{
 				if let closureRawPtr = sqlite3_user_data(context) {
 					let closurePtr = closureRawPtr.bindMemory(to: MatchClosureType.self, capacity: 1)
-					let indices = FingerStringDB.TaskList.Schema.selectColumnIndices
-					let record = FingerStringDB.TaskList(
+					let indices = TaskList.Schema.selectColumnIndices
+					let record = TaskList(
 						id: (indices.idx_id >= 0) && (indices.idx_id < argc) && (sqlite3_value_type(argv[Int(indices.idx_id)]) != SQLITE_NULL) ? Int(sqlite3_value_int64(argv[Int(indices.idx_id)])) : RecordType.schema.id.defaultValue,
 						slug: ((indices.idx_slug >= 0) && (indices.idx_slug < argc) ? (sqlite3_value_text(argv[Int(indices.idx_slug)]).flatMap(String.init(cString:))) : nil) ?? RecordType.schema.slug.defaultValue,
 						title: (indices.idx_title >= 0) && (indices.idx_title < argc) ? (sqlite3_value_text(argv[Int(indices.idx_title)]).flatMap(String.init(cString:))) : RecordType.schema.title.defaultValue,
@@ -1504,7 +1468,7 @@ public extension FingerStringDB.TaskList {
 			return sqlite3_create_function(
 				unsafeDatabaseHandle,
 				"taskLists_swift_match",
-				FingerStringDB.TaskList.Schema.columnCount,
+				TaskList.Schema.columnCount,
 				flags,
 				UnsafeMutableRawPointer(mutating: matcher),
 				dispatch,
@@ -1532,7 +1496,7 @@ public extension FingerStringDB.TaskList {
 			sqlite3_create_function(
 				unsafeDatabaseHandle,
 				"taskLists_swift_match",
-				FingerStringDB.TaskList.Schema.columnCount,
+				TaskList.Schema.columnCount,
 				flags,
 				nil,
 				nil,
@@ -1542,38 +1506,38 @@ public extension FingerStringDB.TaskList {
 		}
 		
 		/// Type information for property ``TaskList/id`` (`id` column).
-		public let id = MappedColumn<FingerStringDB.TaskList, Int>(
+		public let id = MappedColumn<TaskList, Int>(
 			externalName: "id",
 			defaultValue: -1,
-			keyPath: \FingerStringDB.TaskList.id
+			keyPath: \TaskList.id
 		)
 		
 		/// Type information for property ``TaskList/slug`` (`slug` column).
-		public let slug = MappedColumn<FingerStringDB.TaskList, String>(
+		public let slug = MappedColumn<TaskList, String>(
 			externalName: "slug",
 			defaultValue: "",
-			keyPath: \FingerStringDB.TaskList.slug
+			keyPath: \TaskList.slug
 		)
 		
 		/// Type information for property ``TaskList/title`` (`title` column).
-		public let title = MappedColumn<FingerStringDB.TaskList, String?>(
+		public let title = MappedColumn<TaskList, String?>(
 			externalName: "title",
 			defaultValue: nil,
-			keyPath: \FingerStringDB.TaskList.title
+			keyPath: \TaskList.title
 		)
 		
 		/// Type information for property ``TaskList/description`` (`description` column).
-		public let description = MappedColumn<FingerStringDB.TaskList, String?>(
+		public let description = MappedColumn<TaskList, String?>(
 			externalName: "description",
 			defaultValue: nil,
-			keyPath: \FingerStringDB.TaskList.description
+			keyPath: \TaskList.description
 		)
 		
 		/// Type information for property ``TaskList/firstTaskId`` (`first_task_id` column).
-		public let firstTaskId = MappedColumn<FingerStringDB.TaskList, Int?>(
+		public let firstTaskId = MappedColumn<TaskList, Int?>(
 			externalName: "first_task_id",
 			defaultValue: nil,
-			keyPath: \FingerStringDB.TaskList.firstTaskId
+			keyPath: \TaskList.firstTaskId
 		)
 		
 		#if swift(>=5.7)
@@ -1692,7 +1656,7 @@ public extension FingerStringDB.TaskList {
 	}
 }
 
-public extension FingerStringDB.TaskItem {
+public extension TaskItem {
 	
 	/// Static type information for the ``TaskItem`` record (`task_item` SQL table).
 	/// 
@@ -1702,8 +1666,8 @@ public extension FingerStringDB.TaskItem {
 	struct Schema : SQLKeyedTableSchema, SQLSwiftMatchableSchema, SQLCreatableSchema {
 		
 		public typealias PropertyIndices = ( idx_id: Int32, idx_listId: Int32, idx_parentId: Int32, idx_nextId: Int32, idx_itemId: Int32, idx_label: Int32, idx_note: Int32 )
-		public typealias RecordType = FingerStringDB.TaskItem
-		public typealias MatchClosureType = ( FingerStringDB.TaskItem ) -> Bool
+		public typealias RecordType = TaskItem
+		public typealias MatchClosureType = ( TaskItem ) -> Bool
 		
 		/// The SQL table name associated with the ``TaskItem`` record.
 		public static let externalName = "task_item"
@@ -1712,10 +1676,10 @@ public extension FingerStringDB.TaskItem {
 		public static let columnCount : Int32 = 7
 		
 		/// Information on the records primary key (``TaskItem/id``).
-		public static let primaryKeyColumn = MappedColumn<FingerStringDB.TaskItem, Int>(
+		public static let primaryKeyColumn = MappedColumn<TaskItem, Int>(
 			externalName: "id",
 			defaultValue: -1,
-			keyPath: \FingerStringDB.TaskItem.id
+			keyPath: \TaskItem.id
 		)
 		
 		/// The SQL used to create the `task_item` table.
@@ -1726,7 +1690,7 @@ public extension FingerStringDB.TaskItem {
 				list_id INTEGER NOT NULL,
 				parent_id INTEGER,
 				next_id INTEGER,
-				item_id TEXT NOT NULL,
+				item_id TEXT UNIQUE NOT NULL,
 				label TEXT NOT NULL,
 				note TEXT,
 				FOREIGN KEY(list_id) REFERENCES task_list(id),
@@ -1839,8 +1803,8 @@ public extension FingerStringDB.TaskItem {
 			{
 				if let closureRawPtr = sqlite3_user_data(context) {
 					let closurePtr = closureRawPtr.bindMemory(to: MatchClosureType.self, capacity: 1)
-					let indices = FingerStringDB.TaskItem.Schema.selectColumnIndices
-					let record = FingerStringDB.TaskItem(
+					let indices = TaskItem.Schema.selectColumnIndices
+					let record = TaskItem(
 						id: (indices.idx_id >= 0) && (indices.idx_id < argc) && (sqlite3_value_type(argv[Int(indices.idx_id)]) != SQLITE_NULL) ? Int(sqlite3_value_int64(argv[Int(indices.idx_id)])) : RecordType.schema.id.defaultValue,
 						listId: (indices.idx_listId >= 0) && (indices.idx_listId < argc) && (sqlite3_value_type(argv[Int(indices.idx_listId)]) != SQLITE_NULL) ? Int(sqlite3_value_int64(argv[Int(indices.idx_listId)])) : RecordType.schema.listId.defaultValue,
 						parentId: (indices.idx_parentId >= 0) && (indices.idx_parentId < argc) ? (sqlite3_value_type(argv[Int(indices.idx_parentId)]) != SQLITE_NULL ? Int(sqlite3_value_int64(argv[Int(indices.idx_parentId)])) : nil) : RecordType.schema.parentId.defaultValue,
@@ -1858,7 +1822,7 @@ public extension FingerStringDB.TaskItem {
 			return sqlite3_create_function(
 				unsafeDatabaseHandle,
 				"taskItems_swift_match",
-				FingerStringDB.TaskItem.Schema.columnCount,
+				TaskItem.Schema.columnCount,
 				flags,
 				UnsafeMutableRawPointer(mutating: matcher),
 				dispatch,
@@ -1886,7 +1850,7 @@ public extension FingerStringDB.TaskItem {
 			sqlite3_create_function(
 				unsafeDatabaseHandle,
 				"taskItems_swift_match",
-				FingerStringDB.TaskItem.Schema.columnCount,
+				TaskItem.Schema.columnCount,
 				flags,
 				nil,
 				nil,
@@ -1896,55 +1860,55 @@ public extension FingerStringDB.TaskItem {
 		}
 		
 		/// Type information for property ``TaskItem/id`` (`id` column).
-		public let id = MappedColumn<FingerStringDB.TaskItem, Int>(
+		public let id = MappedColumn<TaskItem, Int>(
 			externalName: "id",
 			defaultValue: -1,
-			keyPath: \FingerStringDB.TaskItem.id
+			keyPath: \TaskItem.id
 		)
 		
 		/// Type information for property ``TaskItem/listId`` (`list_id` column).
-		public let listId = MappedForeignKey<FingerStringDB.TaskItem, Int, MappedColumn<FingerStringDB.TaskList, Int>>(
+		public let listId = MappedForeignKey<TaskItem, Int, MappedColumn<TaskList, Int>>(
 			externalName: "list_id",
 			defaultValue: -1,
-			keyPath: \FingerStringDB.TaskItem.listId,
-			destinationColumn: FingerStringDB.TaskList.schema.id
+			keyPath: \TaskItem.listId,
+			destinationColumn: TaskList.schema.id
 		)
 		
 		/// Type information for property ``TaskItem/parentId`` (`parent_id` column).
-		public let parentId = MappedForeignKey<FingerStringDB.TaskItem, Int?, MappedColumn<FingerStringDB.TaskItem, Int>>(
+		public let parentId = MappedForeignKey<TaskItem, Int?, MappedColumn<TaskItem, Int>>(
 			externalName: "parent_id",
 			defaultValue: nil,
-			keyPath: \FingerStringDB.TaskItem.parentId,
-			destinationColumn: FingerStringDB.TaskItem.schema.id
+			keyPath: \TaskItem.parentId,
+			destinationColumn: TaskItem.schema.id
 		)
 		
 		/// Type information for property ``TaskItem/nextId`` (`next_id` column).
-		public let nextId = MappedForeignKey<FingerStringDB.TaskItem, Int?, MappedColumn<FingerStringDB.TaskItem, Int>>(
+		public let nextId = MappedForeignKey<TaskItem, Int?, MappedColumn<TaskItem, Int>>(
 			externalName: "next_id",
 			defaultValue: nil,
-			keyPath: \FingerStringDB.TaskItem.nextId,
-			destinationColumn: FingerStringDB.TaskItem.schema.id
+			keyPath: \TaskItem.nextId,
+			destinationColumn: TaskItem.schema.id
 		)
 		
 		/// Type information for property ``TaskItem/itemId`` (`item_id` column).
-		public let itemId = MappedColumn<FingerStringDB.TaskItem, String>(
+		public let itemId = MappedColumn<TaskItem, String>(
 			externalName: "item_id",
 			defaultValue: "",
-			keyPath: \FingerStringDB.TaskItem.itemId
+			keyPath: \TaskItem.itemId
 		)
 		
 		/// Type information for property ``TaskItem/label`` (`label` column).
-		public let label = MappedColumn<FingerStringDB.TaskItem, String>(
+		public let label = MappedColumn<TaskItem, String>(
 			externalName: "label",
 			defaultValue: "",
-			keyPath: \FingerStringDB.TaskItem.label
+			keyPath: \TaskItem.label
 		)
 		
 		/// Type information for property ``TaskItem/note`` (`note` column).
-		public let note = MappedColumn<FingerStringDB.TaskItem, String?>(
+		public let note = MappedColumn<TaskItem, String?>(
 			externalName: "note",
 			defaultValue: nil,
-			keyPath: \FingerStringDB.TaskItem.note
+			keyPath: \TaskItem.note
 		)
 		
 		#if swift(>=5.7)
@@ -2077,13 +2041,13 @@ public extension FingerStringDB.TaskItem {
 }
 
 public extension SQLRecordFetchOperations
-	where T == FingerStringDB.TaskList, Ops: SQLDatabaseFetchOperations, Ops.RecordTypes == FingerStringDB.RecordTypes
+	where T == TaskList, Ops: SQLDatabaseFetchOperations, Ops.RecordTypes == FingerStringDB.RecordTypes
 {
 	
-	/// Fetch the ``FingerStringDB/TaskList`` record related to a ``FingerStringDB/TaskItem`` (`listId`).
+	/// Fetch the ``TaskList`` record related to a ``TaskItem`` (`listId`).
 	/// 
-	/// This fetches the related ``FingerStringDB/TaskList`` record using the
-	/// ``FingerStringDB/TaskItem/listId`` property.
+	/// This fetches the related ``TaskList`` record using the
+	/// ``TaskItem/listId`` property.
 	/// 
 	/// Example:
 	/// ```swift
@@ -2093,9 +2057,9 @@ public extension SQLRecordFetchOperations
 	/// 
 	/// - Parameters:
 	///   - record: The ``TaskItem`` record.
-	/// - Returns: The related ``FingerStringDB/TaskList`` record (throws if not found).
+	/// - Returns: The related ``TaskList`` record (throws if not found).
 	@inlinable
-	func find(`for` record: FingerStringDB.TaskItem) throws -> FingerStringDB.TaskList
+	func find(`for` record: TaskItem) throws -> TaskList
 	{
 		if let record = try operations[dynamicMember: \.taskItems].findTarget(for: \.listId, in: record) {
 			return record
@@ -2107,13 +2071,13 @@ public extension SQLRecordFetchOperations
 }
 
 public extension SQLRecordFetchOperations
-	where T == FingerStringDB.TaskItem, Ops: SQLDatabaseFetchOperations, Ops.RecordTypes == FingerStringDB.RecordTypes
+	where T == TaskItem, Ops: SQLDatabaseFetchOperations, Ops.RecordTypes == FingerStringDB.RecordTypes
 {
 	
-	/// Fetch the ``FingerStringDB/TaskItem`` record related to itself (`parentId`).
+	/// Fetch the ``TaskItem`` record related to itself (`parentId`).
 	/// 
-	/// This fetches the related ``FingerStringDB/TaskItem`` record using the
-	/// ``FingerStringDB/TaskItem/parentId`` property.
+	/// This fetches the related ``TaskItem`` record using the
+	/// ``TaskItem/parentId`` property.
 	/// 
 	/// Example:
 	/// ```swift
@@ -2123,18 +2087,17 @@ public extension SQLRecordFetchOperations
 	/// 
 	/// - Parameters:
 	///   - record: The ``TaskItem`` record.
-	/// - Returns: The related ``FingerStringDB/TaskItem`` record, or `nil` if not found.
+	/// - Returns: The related ``TaskItem`` record, or `nil` if not found.
 	@inlinable
-	func find(forParent record: FingerStringDB.TaskItem)
-		throws -> FingerStringDB.TaskItem?
+	func find(forParent record: TaskItem) throws -> TaskItem?
 	{
 		try operations[dynamicMember: \.taskItems].findTarget(for: \.parentId, in: record)
 	}
 	
-	/// Fetch the ``FingerStringDB/TaskItem`` record related to itself (`nextId`).
+	/// Fetch the ``TaskItem`` record related to itself (`nextId`).
 	/// 
-	/// This fetches the related ``FingerStringDB/TaskItem`` record using the
-	/// ``FingerStringDB/TaskItem/nextId`` property.
+	/// This fetches the related ``TaskItem`` record using the
+	/// ``TaskItem/nextId`` property.
 	/// 
 	/// Example:
 	/// ```swift
@@ -2144,18 +2107,17 @@ public extension SQLRecordFetchOperations
 	/// 
 	/// - Parameters:
 	///   - record: The ``TaskItem`` record.
-	/// - Returns: The related ``FingerStringDB/TaskItem`` record, or `nil` if not found.
+	/// - Returns: The related ``TaskItem`` record, or `nil` if not found.
 	@inlinable
-	func find(forNext record: FingerStringDB.TaskItem)
-		throws -> FingerStringDB.TaskItem?
+	func find(forNext record: TaskItem) throws -> TaskItem?
 	{
 		try operations[dynamicMember: \.taskItems].findTarget(for: \.nextId, in: record)
 	}
 	
-	/// Fetches the ``FingerStringDB/TaskItem`` records related to a ``FingerStringDB/TaskList`` (`listId`).
+	/// Fetches the ``TaskItem`` records related to a ``TaskList`` (`listId`).
 	/// 
-	/// This fetches the related ``FingerStringDB/TaskList`` records using the
-	/// ``FingerStringDB/TaskItem/listId`` property.
+	/// This fetches the related ``TaskList`` records using the
+	/// ``TaskItem/listId`` property.
 	/// 
 	/// Example:
 	/// ```swift
@@ -2164,20 +2126,19 @@ public extension SQLRecordFetchOperations
 	/// ```
 	/// 
 	/// - Parameters:
-	///   - record: The ``FingerStringDB/TaskList`` record.
+	///   - record: The ``TaskList`` record.
 	///   - limit: An optional limit of records to fetch (defaults to `nil`).
 	/// - Returns: The related ``TaskList`` records.
 	@inlinable
-	func fetch(forList record: FingerStringDB.TaskList, limit: Int? = nil)
-		throws -> [ FingerStringDB.TaskItem ]
+	func fetch(forList record: TaskList, limit: Int? = nil) throws -> [ TaskItem ]
 	{
 		try fetch(for: \.listId, in: record, limit: limit)
 	}
 	
-	/// Fetches the ``FingerStringDB/TaskItem`` records related to itself (`parentId`).
+	/// Fetches the ``TaskItem`` records related to itself (`parentId`).
 	/// 
-	/// This fetches the related ``FingerStringDB/TaskItem`` records using the
-	/// ``FingerStringDB/TaskItem/parentId`` property.
+	/// This fetches the related ``TaskItem`` records using the
+	/// ``TaskItem/parentId`` property.
 	/// 
 	/// Example:
 	/// ```swift
@@ -2186,20 +2147,19 @@ public extension SQLRecordFetchOperations
 	/// ```
 	/// 
 	/// - Parameters:
-	///   - record: The ``FingerStringDB/TaskItem`` record.
+	///   - record: The ``TaskItem`` record.
 	///   - limit: An optional limit of records to fetch (defaults to `nil`).
 	/// - Returns: The related ``TaskItem`` records.
 	@inlinable
-	func fetch(forParent record: FingerStringDB.TaskItem, limit: Int? = nil)
-		throws -> [ FingerStringDB.TaskItem ]
+	func fetch(forParent record: TaskItem, limit: Int? = nil) throws -> [ TaskItem ]
 	{
 		try fetch(for: \.parentId, in: record, limit: limit)
 	}
 	
-	/// Fetches the ``FingerStringDB/TaskItem`` records related to itself (`nextId`).
+	/// Fetches the ``TaskItem`` records related to itself (`nextId`).
 	/// 
-	/// This fetches the related ``FingerStringDB/TaskItem`` records using the
-	/// ``FingerStringDB/TaskItem/nextId`` property.
+	/// This fetches the related ``TaskItem`` records using the
+	/// ``TaskItem/nextId`` property.
 	/// 
 	/// Example:
 	/// ```swift
@@ -2208,12 +2168,11 @@ public extension SQLRecordFetchOperations
 	/// ```
 	/// 
 	/// - Parameters:
-	///   - record: The ``FingerStringDB/TaskItem`` record.
+	///   - record: The ``TaskItem`` record.
 	///   - limit: An optional limit of records to fetch (defaults to `nil`).
 	/// - Returns: The related ``TaskItem`` records.
 	@inlinable
-	func fetch(forNext record: FingerStringDB.TaskItem, limit: Int? = nil)
-		throws -> [ FingerStringDB.TaskItem ]
+	func fetch(forNext record: TaskItem, limit: Int? = nil) throws -> [ TaskItem ]
 	{
 		try fetch(for: \.nextId, in: record, limit: limit)
 	}
@@ -2223,13 +2182,13 @@ public extension SQLRecordFetchOperations
 #if canImport(_Concurrency)
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public extension SQLRecordFetchOperations
-	where T == FingerStringDB.TaskList, Ops: SQLDatabaseFetchOperations & SQLDatabaseAsyncOperations, Ops.RecordTypes == FingerStringDB.RecordTypes
+	where T == TaskList, Ops: SQLDatabaseFetchOperations & SQLDatabaseAsyncOperations, Ops.RecordTypes == FingerStringDB.RecordTypes
 {
 	
-	/// Fetch the ``FingerStringDB/TaskList`` record related to a ``FingerStringDB/TaskItem`` (`listId`).
+	/// Fetch the ``TaskList`` record related to a ``TaskItem`` (`listId`).
 	/// 
-	/// This fetches the related ``FingerStringDB/TaskList`` record using the
-	/// ``FingerStringDB/TaskItem/listId`` property.
+	/// This fetches the related ``TaskList`` record using the
+	/// ``TaskItem/listId`` property.
 	/// 
 	/// Example:
 	/// ```swift
@@ -2239,10 +2198,9 @@ public extension SQLRecordFetchOperations
 	/// 
 	/// - Parameters:
 	///   - record: The ``TaskItem`` record.
-	/// - Returns: The related ``FingerStringDB/TaskList`` record (throws if not found).
+	/// - Returns: The related ``TaskList`` record (throws if not found).
 	@inlinable
-	func find(`for` record: FingerStringDB.TaskItem)
-		async throws -> FingerStringDB.TaskList
+	func find(`for` record: TaskItem) async throws -> TaskList
 	{
 		if let record = try await operations[dynamicMember: \.taskItems].findTarget(
 			for: \.listId,
@@ -2262,13 +2220,13 @@ public extension SQLRecordFetchOperations
 #if canImport(_Concurrency)
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public extension SQLRecordFetchOperations
-	where T == FingerStringDB.TaskItem, Ops: SQLDatabaseFetchOperations & SQLDatabaseAsyncOperations, Ops.RecordTypes == FingerStringDB.RecordTypes
+	where T == TaskItem, Ops: SQLDatabaseFetchOperations & SQLDatabaseAsyncOperations, Ops.RecordTypes == FingerStringDB.RecordTypes
 {
 	
-	/// Fetch the ``FingerStringDB/TaskItem`` record related to itself (`parentId`).
+	/// Fetch the ``TaskItem`` record related to itself (`parentId`).
 	/// 
-	/// This fetches the related ``FingerStringDB/TaskItem`` record using the
-	/// ``FingerStringDB/TaskItem/parentId`` property.
+	/// This fetches the related ``TaskItem`` record using the
+	/// ``TaskItem/parentId`` property.
 	/// 
 	/// Example:
 	/// ```swift
@@ -2278,10 +2236,9 @@ public extension SQLRecordFetchOperations
 	/// 
 	/// - Parameters:
 	///   - record: The ``TaskItem`` record.
-	/// - Returns: The related ``FingerStringDB/TaskItem`` record, or `nil` if not found.
+	/// - Returns: The related ``TaskItem`` record, or `nil` if not found.
 	@inlinable
-	func find(forParent record: FingerStringDB.TaskItem)
-		async throws -> FingerStringDB.TaskItem?
+	func find(forParent record: TaskItem) async throws -> TaskItem?
 	{
 		try await operations[dynamicMember: \.taskItems].findTarget(
 			for: \.parentId,
@@ -2289,10 +2246,10 @@ public extension SQLRecordFetchOperations
 		)
 	}
 	
-	/// Fetch the ``FingerStringDB/TaskItem`` record related to itself (`nextId`).
+	/// Fetch the ``TaskItem`` record related to itself (`nextId`).
 	/// 
-	/// This fetches the related ``FingerStringDB/TaskItem`` record using the
-	/// ``FingerStringDB/TaskItem/nextId`` property.
+	/// This fetches the related ``TaskItem`` record using the
+	/// ``TaskItem/nextId`` property.
 	/// 
 	/// Example:
 	/// ```swift
@@ -2302,10 +2259,9 @@ public extension SQLRecordFetchOperations
 	/// 
 	/// - Parameters:
 	///   - record: The ``TaskItem`` record.
-	/// - Returns: The related ``FingerStringDB/TaskItem`` record, or `nil` if not found.
+	/// - Returns: The related ``TaskItem`` record, or `nil` if not found.
 	@inlinable
-	func find(forNext record: FingerStringDB.TaskItem)
-		async throws -> FingerStringDB.TaskItem?
+	func find(forNext record: TaskItem) async throws -> TaskItem?
 	{
 		try await operations[dynamicMember: \.taskItems].findTarget(
 			for: \.nextId,
@@ -2313,10 +2269,10 @@ public extension SQLRecordFetchOperations
 		)
 	}
 	
-	/// Fetches the ``FingerStringDB/TaskItem`` records related to a ``FingerStringDB/TaskList`` (`listId`).
+	/// Fetches the ``TaskItem`` records related to a ``TaskList`` (`listId`).
 	/// 
-	/// This fetches the related ``FingerStringDB/TaskList`` records using the
-	/// ``FingerStringDB/TaskItem/listId`` property.
+	/// This fetches the related ``TaskList`` records using the
+	/// ``TaskItem/listId`` property.
 	/// 
 	/// Example:
 	/// ```swift
@@ -2325,20 +2281,19 @@ public extension SQLRecordFetchOperations
 	/// ```
 	/// 
 	/// - Parameters:
-	///   - record: The ``FingerStringDB/TaskList`` record.
+	///   - record: The ``TaskList`` record.
 	///   - limit: An optional limit of records to fetch (defaults to `nil`).
 	/// - Returns: The related ``TaskList`` records.
 	@inlinable
-	func fetch(forList record: FingerStringDB.TaskList, limit: Int? = nil)
-		async throws -> [ FingerStringDB.TaskItem ]
+	func fetch(forList record: TaskList, limit: Int? = nil) async throws -> [ TaskItem ]
 	{
 		try await fetch(for: \.listId, in: record, limit: limit)
 	}
 	
-	/// Fetches the ``FingerStringDB/TaskItem`` records related to itself (`parentId`).
+	/// Fetches the ``TaskItem`` records related to itself (`parentId`).
 	/// 
-	/// This fetches the related ``FingerStringDB/TaskItem`` records using the
-	/// ``FingerStringDB/TaskItem/parentId`` property.
+	/// This fetches the related ``TaskItem`` records using the
+	/// ``TaskItem/parentId`` property.
 	/// 
 	/// Example:
 	/// ```swift
@@ -2347,20 +2302,20 @@ public extension SQLRecordFetchOperations
 	/// ```
 	/// 
 	/// - Parameters:
-	///   - record: The ``FingerStringDB/TaskItem`` record.
+	///   - record: The ``TaskItem`` record.
 	///   - limit: An optional limit of records to fetch (defaults to `nil`).
 	/// - Returns: The related ``TaskItem`` records.
 	@inlinable
-	func fetch(forParent record: FingerStringDB.TaskItem, limit: Int? = nil)
-		async throws -> [ FingerStringDB.TaskItem ]
+	func fetch(forParent record: TaskItem, limit: Int? = nil)
+		async throws -> [ TaskItem ]
 	{
 		try await fetch(for: \.parentId, in: record, limit: limit)
 	}
 	
-	/// Fetches the ``FingerStringDB/TaskItem`` records related to itself (`nextId`).
+	/// Fetches the ``TaskItem`` records related to itself (`nextId`).
 	/// 
-	/// This fetches the related ``FingerStringDB/TaskItem`` records using the
-	/// ``FingerStringDB/TaskItem/nextId`` property.
+	/// This fetches the related ``TaskItem`` records using the
+	/// ``TaskItem/nextId`` property.
 	/// 
 	/// Example:
 	/// ```swift
@@ -2369,12 +2324,11 @@ public extension SQLRecordFetchOperations
 	/// ```
 	/// 
 	/// - Parameters:
-	///   - record: The ``FingerStringDB/TaskItem`` record.
+	///   - record: The ``TaskItem`` record.
 	///   - limit: An optional limit of records to fetch (defaults to `nil`).
 	/// - Returns: The related ``TaskItem`` records.
 	@inlinable
-	func fetch(forNext record: FingerStringDB.TaskItem, limit: Int? = nil)
-		async throws -> [ FingerStringDB.TaskItem ]
+	func fetch(forNext record: TaskItem, limit: Int? = nil) async throws -> [ TaskItem ]
 	{
 		try await fetch(for: \.nextId, in: record, limit: limit)
 	}
