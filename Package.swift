@@ -24,6 +24,10 @@ let package = Package(
 			from: "1.0.0"
 		),
 		.package(
+			url: "https://github.com/mredig/SwiftPizzaSnips.git",
+			branch: "0.4.38i"
+		),
+		.package(
 			url: "https://github.com/apple/swift-argument-parser.git",
 			from: "1.3.0"
 		),
@@ -33,6 +37,7 @@ let package = Package(
 			name: "FingerString",
 			dependencies: [
 				.product(name: "Lighter", package: "Lighter"),
+				"SwiftPizzaSnips"
 			],
 			swiftSettings: [
 				.enableUpcomingFeature("StrictConcurrency"),
