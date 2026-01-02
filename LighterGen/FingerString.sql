@@ -3,10 +3,10 @@ CREATE TABLE task_list (
 	slug TEXT UNIQUE NOT NULL,
 	title TEXT,
 	description TEXT,
-	first_item_id INTEGER
+	first_task_id INTEGER
 );
 
-CREATE TABLE list_item (
+CREATE TABLE task_item (
 	id INTEGER PRIMARY KEY NOT NULL,
 	list_id INTEGER NOT NULL,
 	parent_id INTEGER,
@@ -15,6 +15,6 @@ CREATE TABLE list_item (
 	label TEXT NOT NULL,
 	note TEXT,
 	FOREIGN KEY(list_id) REFERENCES task_list(id),
-	FOREIGN KEY(parent_id) REFERENCES list_item(id),
-	FOREIGN KEY(next_id) REFERENCES list_item(id)
+	FOREIGN KEY(parent_id) REFERENCES task_item(id),
+	FOREIGN KEY(next_id) REFERENCES task_item(id)
 );
