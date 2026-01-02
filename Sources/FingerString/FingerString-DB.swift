@@ -1,33 +1,31 @@
-// Autocreated by sqlite2swift at 2026-01-02T20:20:49Z
+// Autocreated by sqlite2swift at 2026-01-02T20:41:13Z
 
 import SQLite3
 import Foundation
 import Lighter
 
-/**
- * Create a SQLite3 database
- * 
- * The database is created using the SQL `create` statements in the
- * Schema structures.
- * 
- * If the operation is successful, the open database handle will be
- * returned in the `db` `inout` parameter.
- * If the open succeeds, but the SQL execution fails, an incomplete
- * database can be left behind. I.e. if an error happens, the path
- * should be tested and deleted if appropriate.
- * 
- * Example:
- * ```swift
- * var db : OpaquePointer!
- * let rc = sqlite3_create_fingerstringdb(path, &db)
- * ```
- * 
- * - Parameters:
- *   - path: Path of the database.
- *   - flags: Custom open flags.
- *   - db: A SQLite3 database handle, if successful.
- * - Returns: The SQLite3 error code (`SQLITE_OK` on success).
- */
+/// Create a SQLite3 database
+/// 
+/// The database is created using the SQL `create` statements in the
+/// Schema structures.
+/// 
+/// If the operation is successful, the open database handle will be
+/// returned in the `db` `inout` parameter.
+/// If the open succeeds, but the SQL execution fails, an incomplete
+/// database can be left behind. I.e. if an error happens, the path
+/// should be tested and deleted if appropriate.
+/// 
+/// Example:
+/// ```swift
+/// var db : OpaquePointer!
+/// let rc = sqlite3_create_fingerstringdb(path, &db)
+/// ```
+/// 
+/// - Parameters:
+///   - path: Path of the database.
+///   - flags: Custom open flags.
+///   - db: A SQLite3 database handle, if successful.
+/// - Returns: The SQLite3 error code (`SQLITE_OK` on success).
 @inlinable
 public func sqlite3_create_fingerstringdb(
 	_ path: UnsafePointer<CChar>!,
@@ -48,23 +46,21 @@ public func sqlite3_create_fingerstringdb(
 	return SQLITE_OK
 }
 
-/**
- * Insert a ``TaskList`` record in the SQLite database.
- * 
- * This operates on a raw SQLite database handle (as returned by
- * `sqlite3_open`).
- * 
- * Example:
- * ```swift
- * let rc = sqlite3_task_list_insert(db, record)
- * assert(rc == SQLITE_OK)
- * ```
- * 
- * - Parameters:
- *   - db: SQLite3 database handle.
- *   - record: The record to insert. Updated with the actual table values (e.g. assigned primary key).
- * - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
- */
+/// Insert a ``TaskList`` record in the SQLite database.
+/// 
+/// This operates on a raw SQLite database handle (as returned by
+/// `sqlite3_open`).
+/// 
+/// Example:
+/// ```swift
+/// let rc = sqlite3_task_list_insert(db, record)
+/// assert(rc == SQLITE_OK)
+/// ```
+/// 
+/// - Parameters:
+///   - db: SQLite3 database handle.
+///   - record: The record to insert. Updated with the actual table values (e.g. assigned primary key).
+/// - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
 @inlinable
 @discardableResult
 public func sqlite3_task_list_insert(
@@ -113,23 +109,21 @@ public func sqlite3_task_list_insert(
 	}
 }
 
-/**
- * Update a ``TaskList`` record in the SQLite database.
- * 
- * This operates on a raw SQLite database handle (as returned by
- * `sqlite3_open`).
- * 
- * Example:
- * ```swift
- * let rc = sqlite3_task_list_update(db, record)
- * assert(rc == SQLITE_OK)
- * ```
- * 
- * - Parameters:
- *   - db: SQLite3 database handle.
- *   - record: The ``TaskList`` record to update.
- * - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
- */
+/// Update a ``TaskList`` record in the SQLite database.
+/// 
+/// This operates on a raw SQLite database handle (as returned by
+/// `sqlite3_open`).
+/// 
+/// Example:
+/// ```swift
+/// let rc = sqlite3_task_list_update(db, record)
+/// assert(rc == SQLITE_OK)
+/// ```
+/// 
+/// - Parameters:
+///   - db: SQLite3 database handle.
+///   - record: The ``TaskList`` record to update.
+/// - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
 @inlinable
 @discardableResult
 public func sqlite3_task_list_update(
@@ -151,23 +145,21 @@ public func sqlite3_task_list_update(
 	}
 }
 
-/**
- * Delete a ``TaskList`` record in the SQLite database.
- * 
- * This operates on a raw SQLite database handle (as returned by
- * `sqlite3_open`).
- * 
- * Example:
- * ```swift
- * let rc = sqlite3_task_list_delete(db, record)
- * assert(rc == SQLITE_OK)
- * ```
- * 
- * - Parameters:
- *   - db: SQLite3 database handle.
- *   - record: The ``TaskList`` record to delete.
- * - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
- */
+/// Delete a ``TaskList`` record in the SQLite database.
+/// 
+/// This operates on a raw SQLite database handle (as returned by
+/// `sqlite3_open`).
+/// 
+/// Example:
+/// ```swift
+/// let rc = sqlite3_task_list_delete(db, record)
+/// assert(rc == SQLITE_OK)
+/// ```
+/// 
+/// - Parameters:
+///   - db: SQLite3 database handle.
+///   - record: The ``TaskList`` record to delete.
+/// - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
 @inlinable
 @discardableResult
 public func sqlite3_task_list_delete(
@@ -185,46 +177,44 @@ public func sqlite3_task_list_delete(
 	return rc != SQLITE_DONE && rc != SQLITE_ROW ? sqlite3_errcode(db) : SQLITE_OK
 }
 
-/**
- * Fetch ``TaskList`` records, filtering using a Swift closure.
- * 
- * This is fetching full ``TaskList`` records from the passed in SQLite database
- * handle. The filtering is done within SQLite, but using a Swift closure
- * that can be passed in.
- * 
- * Within that closure other SQL queries can be done on separate connections,
- * but *not* within the same database handle that is being passed in (because
- * the closure is executed in the context of the query).
- * 
- * Sorting can be done using raw SQL (by passing in a `orderBy` parameter,
- * e.g. `orderBy: "name DESC"`),
- * or just in Swift (e.g. `fetch(in: db).sorted { $0.name > $1.name }`).
- * Since the matching is done in Swift anyways, the primary advantage of
- * doing it in SQL is that a `LIMIT` can be applied efficiently (i.e. w/o
- * walking and loading all rows).
- * 
- * If the function returns `nil`, the error can be found using the usual
- * `sqlite3_errcode` and companions.
- * 
- * Example:
- * ```swift
- * let records = sqlite3_task_lists_fetch(db) { record in
- *   record.name != "Duck"
- * }
- * 
- * let records = sqlite3_task_lists_fetch(db, orderBy: "name", limit: 5) {
- *   $0.firstname != nil
- * }
- * ```
- * 
- * - Parameters:
- *   - db: The SQLite database handle (as returned by `sqlite3_open`)
- *   - sql: Optional custom SQL yielding ``TaskList`` records.
- *   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
- *   - limit: An optional fetch limit.
- *   - filter: A Swift closure used for filtering, taking the``TaskList`` record to be matched.
- * - Returns: The records matching the query, or `nil` if there was an error.
- */
+/// Fetch ``TaskList`` records, filtering using a Swift closure.
+/// 
+/// This is fetching full ``TaskList`` records from the passed in SQLite database
+/// handle. The filtering is done within SQLite, but using a Swift closure
+/// that can be passed in.
+/// 
+/// Within that closure other SQL queries can be done on separate connections,
+/// but *not* within the same database handle that is being passed in (because
+/// the closure is executed in the context of the query).
+/// 
+/// Sorting can be done using raw SQL (by passing in a `orderBy` parameter,
+/// e.g. `orderBy: "name DESC"`),
+/// or just in Swift (e.g. `fetch(in: db).sorted { $0.name > $1.name }`).
+/// Since the matching is done in Swift anyways, the primary advantage of
+/// doing it in SQL is that a `LIMIT` can be applied efficiently (i.e. w/o
+/// walking and loading all rows).
+/// 
+/// If the function returns `nil`, the error can be found using the usual
+/// `sqlite3_errcode` and companions.
+/// 
+/// Example:
+/// ```swift
+/// let records = sqlite3_task_lists_fetch(db) { record in
+///   record.name != "Duck"
+/// }
+/// 
+/// let records = sqlite3_task_lists_fetch(db, orderBy: "name", limit: 5) {
+///   $0.firstname != nil
+/// }
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - sql: Optional custom SQL yielding ``TaskList`` records.
+///   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
+///   - limit: An optional fetch limit.
+///   - filter: A Swift closure used for filtering, taking the``TaskList`` record to be matched.
+/// - Returns: The records matching the query, or `nil` if there was an error.
 @inlinable
 public func sqlite3_task_lists_fetch(
 	_ db: OpaquePointer!,
@@ -272,31 +262,29 @@ public func sqlite3_task_lists_fetch(
 	}
 }
 
-/**
- * Fetch ``TaskList`` records using the base SQLite API.
- * 
- * If the function returns `nil`, the error can be found using the usual
- * `sqlite3_errcode` and companions.
- * 
- * Example:
- * ```swift
- * let records = sqlite3_task_lists_fetch(
- *   db, sql: #"SELECT * FROM task_list"#
- * }
- * 
- * let records = sqlite3_task_lists_fetch(
- *   db, sql: #"SELECT * FROM task_list"#,
- *   orderBy: "name", limit: 5
- * )
- * ```
- * 
- * - Parameters:
- *   - db: The SQLite database handle (as returned by `sqlite3_open`)
- *   - sql: Custom SQL yielding ``TaskList`` records.
- *   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
- *   - limit: An optional fetch limit.
- * - Returns: The records matching the query, or `nil` if there was an error.
- */
+/// Fetch ``TaskList`` records using the base SQLite API.
+/// 
+/// If the function returns `nil`, the error can be found using the usual
+/// `sqlite3_errcode` and companions.
+/// 
+/// Example:
+/// ```swift
+/// let records = sqlite3_task_lists_fetch(
+///   db, sql: #"SELECT * FROM task_list"#
+/// }
+/// 
+/// let records = sqlite3_task_lists_fetch(
+///   db, sql: #"SELECT * FROM task_list"#,
+///   orderBy: "name", limit: 5
+/// )
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - sql: Custom SQL yielding ``TaskList`` records.
+///   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
+///   - limit: An optional fetch limit.
+/// - Returns: The records matching the query, or `nil` if there was an error.
 @inlinable
 public func sqlite3_task_lists_fetch(
 	_ db: OpaquePointer!,
@@ -331,25 +319,23 @@ public func sqlite3_task_lists_fetch(
 	return records
 }
 
-/**
- * Fetch a ``TaskList`` record the base SQLite API.
- * 
- * If the function returns `nil`, the error can be found using the usual
- * `sqlite3_errcode` and companions.
- * 
- * Example:
- * ```swift
- * let record = sqlite3_task_list_find(db, 10) {
- *   print("Found record:", record)
- * }
- * ```
- * 
- * - Parameters:
- *   - db: The SQLite database handle (as returned by `sqlite3_open`)
- *   - sql: Optional custom SQL yielding ``TaskList`` records, has one `?` parameter containing the ID.
- *   - primaryKey: The primary key value to lookup (e.g. `10`)
- * - Returns: The record matching the query, or `nil` if it wasn't found or there was an error.
- */
+/// Fetch a ``TaskList`` record the base SQLite API.
+/// 
+/// If the function returns `nil`, the error can be found using the usual
+/// `sqlite3_errcode` and companions.
+/// 
+/// Example:
+/// ```swift
+/// let record = sqlite3_task_list_find(db, 10) {
+///   print("Found record:", record)
+/// }
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - sql: Optional custom SQL yielding ``TaskList`` records, has one `?` parameter containing the ID.
+///   - primaryKey: The primary key value to lookup (e.g. `10`)
+/// - Returns: The record matching the query, or `nil` if it wasn't found or there was an error.
 @inlinable
 public func sqlite3_task_list_find(
 	_ db: OpaquePointer!,
@@ -377,25 +363,23 @@ public func sqlite3_task_list_find(
 	return FingerStringDB.TaskList(statement, indices: indices)
 }
 
-/**
- * Fetches the ``FingerStringDB/ListItem`` records related to a ``FingerStringDB/TaskList`` (`listId`).
- * 
- * This fetches the related ``FingerStringDB/ListItem`` records using the
- * ``FingerStringDB/ListItem/listId`` property.
- * 
- * Example:
- * ```swift
- * let record         : TaskList = ...
- * let relatedRecords = sqlite3_list_items_fetch(db, forList: record)
- * ```
- * 
- * - Parameters:
- *   - db: The SQLite database handle (as returned by `sqlite3_open`)
- *   - record: The ``FingerStringDB/TaskList`` record.
- *   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
- *   - limit: An optional fetch limit.
- * - Returns: The related ``FingerStringDB/ListItem`` records.
- */
+/// Fetches the ``FingerStringDB/ListItem`` records related to a ``FingerStringDB/TaskList`` (`listId`).
+/// 
+/// This fetches the related ``FingerStringDB/ListItem`` records using the
+/// ``FingerStringDB/ListItem/listId`` property.
+/// 
+/// Example:
+/// ```swift
+/// let record         : TaskList = ...
+/// let relatedRecords = sqlite3_list_items_fetch(db, forList: record)
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - record: The ``FingerStringDB/TaskList`` record.
+///   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
+///   - limit: An optional fetch limit.
+/// - Returns: The related ``FingerStringDB/ListItem`` records.
 @inlinable
 public func sqlite3_list_items_fetch(
 	_ db: OpaquePointer!,
@@ -432,23 +416,21 @@ public func sqlite3_list_items_fetch(
 	return records
 }
 
-/**
- * Insert a ``ListItem`` record in the SQLite database.
- * 
- * This operates on a raw SQLite database handle (as returned by
- * `sqlite3_open`).
- * 
- * Example:
- * ```swift
- * let rc = sqlite3_list_item_insert(db, record)
- * assert(rc == SQLITE_OK)
- * ```
- * 
- * - Parameters:
- *   - db: SQLite3 database handle.
- *   - record: The record to insert. Updated with the actual table values (e.g. assigned primary key).
- * - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
- */
+/// Insert a ``ListItem`` record in the SQLite database.
+/// 
+/// This operates on a raw SQLite database handle (as returned by
+/// `sqlite3_open`).
+/// 
+/// Example:
+/// ```swift
+/// let rc = sqlite3_list_item_insert(db, record)
+/// assert(rc == SQLITE_OK)
+/// ```
+/// 
+/// - Parameters:
+///   - db: SQLite3 database handle.
+///   - record: The record to insert. Updated with the actual table values (e.g. assigned primary key).
+/// - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
 @inlinable
 @discardableResult
 public func sqlite3_list_item_insert(
@@ -497,23 +479,21 @@ public func sqlite3_list_item_insert(
 	}
 }
 
-/**
- * Update a ``ListItem`` record in the SQLite database.
- * 
- * This operates on a raw SQLite database handle (as returned by
- * `sqlite3_open`).
- * 
- * Example:
- * ```swift
- * let rc = sqlite3_list_item_update(db, record)
- * assert(rc == SQLITE_OK)
- * ```
- * 
- * - Parameters:
- *   - db: SQLite3 database handle.
- *   - record: The ``ListItem`` record to update.
- * - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
- */
+/// Update a ``ListItem`` record in the SQLite database.
+/// 
+/// This operates on a raw SQLite database handle (as returned by
+/// `sqlite3_open`).
+/// 
+/// Example:
+/// ```swift
+/// let rc = sqlite3_list_item_update(db, record)
+/// assert(rc == SQLITE_OK)
+/// ```
+/// 
+/// - Parameters:
+///   - db: SQLite3 database handle.
+///   - record: The ``ListItem`` record to update.
+/// - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
 @inlinable
 @discardableResult
 public func sqlite3_list_item_update(
@@ -535,23 +515,21 @@ public func sqlite3_list_item_update(
 	}
 }
 
-/**
- * Delete a ``ListItem`` record in the SQLite database.
- * 
- * This operates on a raw SQLite database handle (as returned by
- * `sqlite3_open`).
- * 
- * Example:
- * ```swift
- * let rc = sqlite3_list_item_delete(db, record)
- * assert(rc == SQLITE_OK)
- * ```
- * 
- * - Parameters:
- *   - db: SQLite3 database handle.
- *   - record: The ``ListItem`` record to delete.
- * - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
- */
+/// Delete a ``ListItem`` record in the SQLite database.
+/// 
+/// This operates on a raw SQLite database handle (as returned by
+/// `sqlite3_open`).
+/// 
+/// Example:
+/// ```swift
+/// let rc = sqlite3_list_item_delete(db, record)
+/// assert(rc == SQLITE_OK)
+/// ```
+/// 
+/// - Parameters:
+///   - db: SQLite3 database handle.
+///   - record: The ``ListItem`` record to delete.
+/// - Returns: The SQLite error code (of `sqlite3_prepare/step`), e.g. `SQLITE_OK`.
 @inlinable
 @discardableResult
 public func sqlite3_list_item_delete(
@@ -569,46 +547,44 @@ public func sqlite3_list_item_delete(
 	return rc != SQLITE_DONE && rc != SQLITE_ROW ? sqlite3_errcode(db) : SQLITE_OK
 }
 
-/**
- * Fetch ``ListItem`` records, filtering using a Swift closure.
- * 
- * This is fetching full ``ListItem`` records from the passed in SQLite database
- * handle. The filtering is done within SQLite, but using a Swift closure
- * that can be passed in.
- * 
- * Within that closure other SQL queries can be done on separate connections,
- * but *not* within the same database handle that is being passed in (because
- * the closure is executed in the context of the query).
- * 
- * Sorting can be done using raw SQL (by passing in a `orderBy` parameter,
- * e.g. `orderBy: "name DESC"`),
- * or just in Swift (e.g. `fetch(in: db).sorted { $0.name > $1.name }`).
- * Since the matching is done in Swift anyways, the primary advantage of
- * doing it in SQL is that a `LIMIT` can be applied efficiently (i.e. w/o
- * walking and loading all rows).
- * 
- * If the function returns `nil`, the error can be found using the usual
- * `sqlite3_errcode` and companions.
- * 
- * Example:
- * ```swift
- * let records = sqlite3_list_items_fetch(db) { record in
- *   record.name != "Duck"
- * }
- * 
- * let records = sqlite3_list_items_fetch(db, orderBy: "name", limit: 5) {
- *   $0.firstname != nil
- * }
- * ```
- * 
- * - Parameters:
- *   - db: The SQLite database handle (as returned by `sqlite3_open`)
- *   - sql: Optional custom SQL yielding ``ListItem`` records.
- *   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
- *   - limit: An optional fetch limit.
- *   - filter: A Swift closure used for filtering, taking the``ListItem`` record to be matched.
- * - Returns: The records matching the query, or `nil` if there was an error.
- */
+/// Fetch ``ListItem`` records, filtering using a Swift closure.
+/// 
+/// This is fetching full ``ListItem`` records from the passed in SQLite database
+/// handle. The filtering is done within SQLite, but using a Swift closure
+/// that can be passed in.
+/// 
+/// Within that closure other SQL queries can be done on separate connections,
+/// but *not* within the same database handle that is being passed in (because
+/// the closure is executed in the context of the query).
+/// 
+/// Sorting can be done using raw SQL (by passing in a `orderBy` parameter,
+/// e.g. `orderBy: "name DESC"`),
+/// or just in Swift (e.g. `fetch(in: db).sorted { $0.name > $1.name }`).
+/// Since the matching is done in Swift anyways, the primary advantage of
+/// doing it in SQL is that a `LIMIT` can be applied efficiently (i.e. w/o
+/// walking and loading all rows).
+/// 
+/// If the function returns `nil`, the error can be found using the usual
+/// `sqlite3_errcode` and companions.
+/// 
+/// Example:
+/// ```swift
+/// let records = sqlite3_list_items_fetch(db) { record in
+///   record.name != "Duck"
+/// }
+/// 
+/// let records = sqlite3_list_items_fetch(db, orderBy: "name", limit: 5) {
+///   $0.firstname != nil
+/// }
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - sql: Optional custom SQL yielding ``ListItem`` records.
+///   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
+///   - limit: An optional fetch limit.
+///   - filter: A Swift closure used for filtering, taking the``ListItem`` record to be matched.
+/// - Returns: The records matching the query, or `nil` if there was an error.
 @inlinable
 public func sqlite3_list_items_fetch(
 	_ db: OpaquePointer!,
@@ -656,31 +632,29 @@ public func sqlite3_list_items_fetch(
 	}
 }
 
-/**
- * Fetch ``ListItem`` records using the base SQLite API.
- * 
- * If the function returns `nil`, the error can be found using the usual
- * `sqlite3_errcode` and companions.
- * 
- * Example:
- * ```swift
- * let records = sqlite3_list_items_fetch(
- *   db, sql: #"SELECT * FROM list_item"#
- * }
- * 
- * let records = sqlite3_list_items_fetch(
- *   db, sql: #"SELECT * FROM list_item"#,
- *   orderBy: "name", limit: 5
- * )
- * ```
- * 
- * - Parameters:
- *   - db: The SQLite database handle (as returned by `sqlite3_open`)
- *   - sql: Custom SQL yielding ``ListItem`` records.
- *   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
- *   - limit: An optional fetch limit.
- * - Returns: The records matching the query, or `nil` if there was an error.
- */
+/// Fetch ``ListItem`` records using the base SQLite API.
+/// 
+/// If the function returns `nil`, the error can be found using the usual
+/// `sqlite3_errcode` and companions.
+/// 
+/// Example:
+/// ```swift
+/// let records = sqlite3_list_items_fetch(
+///   db, sql: #"SELECT * FROM list_item"#
+/// }
+/// 
+/// let records = sqlite3_list_items_fetch(
+///   db, sql: #"SELECT * FROM list_item"#,
+///   orderBy: "name", limit: 5
+/// )
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - sql: Custom SQL yielding ``ListItem`` records.
+///   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
+///   - limit: An optional fetch limit.
+/// - Returns: The records matching the query, or `nil` if there was an error.
 @inlinable
 public func sqlite3_list_items_fetch(
 	_ db: OpaquePointer!,
@@ -715,25 +689,23 @@ public func sqlite3_list_items_fetch(
 	return records
 }
 
-/**
- * Fetch a ``ListItem`` record the base SQLite API.
- * 
- * If the function returns `nil`, the error can be found using the usual
- * `sqlite3_errcode` and companions.
- * 
- * Example:
- * ```swift
- * let record = sqlite3_list_item_find(db, 10) {
- *   print("Found record:", record)
- * }
- * ```
- * 
- * - Parameters:
- *   - db: The SQLite database handle (as returned by `sqlite3_open`)
- *   - sql: Optional custom SQL yielding ``ListItem`` records, has one `?` parameter containing the ID.
- *   - primaryKey: The primary key value to lookup (e.g. `10`)
- * - Returns: The record matching the query, or `nil` if it wasn't found or there was an error.
- */
+/// Fetch a ``ListItem`` record the base SQLite API.
+/// 
+/// If the function returns `nil`, the error can be found using the usual
+/// `sqlite3_errcode` and companions.
+/// 
+/// Example:
+/// ```swift
+/// let record = sqlite3_list_item_find(db, 10) {
+///   print("Found record:", record)
+/// }
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - sql: Optional custom SQL yielding ``ListItem`` records, has one `?` parameter containing the ID.
+///   - primaryKey: The primary key value to lookup (e.g. `10`)
+/// - Returns: The record matching the query, or `nil` if it wasn't found or there was an error.
 @inlinable
 public func sqlite3_list_item_find(
 	_ db: OpaquePointer!,
@@ -761,23 +733,21 @@ public func sqlite3_list_item_find(
 	return FingerStringDB.ListItem(statement, indices: indices)
 }
 
-/**
- * Fetch the ``TaskList`` record related to an ``ListItem`` (`listId`).
- * 
- * This fetches the related ``TaskList`` record using the
- * ``ListItem/listId`` property.
- * 
- * Example:
- * ```swift
- * let sourceRecord  : ListItem = ...
- * let relatedRecord = sqlite3_task_list_find(db, for: sourceRecord)
- * ```
- * 
- * - Parameters:
- *   - db: The SQLite database handle (as returned by `sqlite3_open`)
- *   - record: The ``ListItem`` record.
- * - Returns: The related ``TaskList`` record, or `nil` if not found/error.
- */
+/// Fetch the ``TaskList`` record related to an ``ListItem`` (`listId`).
+/// 
+/// This fetches the related ``TaskList`` record using the
+/// ``ListItem/listId`` property.
+/// 
+/// Example:
+/// ```swift
+/// let sourceRecord  : ListItem = ...
+/// let relatedRecord = sqlite3_task_list_find(db, for: sourceRecord)
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - record: The ``ListItem`` record.
+/// - Returns: The related ``TaskList`` record, or `nil` if not found/error.
 @inlinable
 public func sqlite3_task_list_find(
 	_ db: OpaquePointer!,
@@ -802,23 +772,21 @@ public func sqlite3_task_list_find(
 	return FingerStringDB.TaskList(statement, indices: indices)
 }
 
-/**
- * Fetch the ``ListItem`` record related to itself (`parentId`).
- * 
- * This fetches the related ``ListItem`` record using the
- * ``ListItem/parentId`` property.
- * 
- * Example:
- * ```swift
- * let sourceRecord  : ListItem = ...
- * let relatedRecord = sqlite3_list_item_find(db, forParent: sourceRecord)
- * ```
- * 
- * - Parameters:
- *   - db: The SQLite database handle (as returned by `sqlite3_open`)
- *   - record: The ``ListItem`` record.
- * - Returns: The related ``ListItem`` record, or `nil` if not found/error.
- */
+/// Fetch the ``ListItem`` record related to itself (`parentId`).
+/// 
+/// This fetches the related ``ListItem`` record using the
+/// ``ListItem/parentId`` property.
+/// 
+/// Example:
+/// ```swift
+/// let sourceRecord  : ListItem = ...
+/// let relatedRecord = sqlite3_list_item_find(db, forParent: sourceRecord)
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - record: The ``ListItem`` record.
+/// - Returns: The related ``ListItem`` record, or `nil` if not found/error.
 @inlinable
 public func sqlite3_list_item_find(
 	_ db: OpaquePointer!,
@@ -848,23 +816,21 @@ public func sqlite3_list_item_find(
 	return FingerStringDB.ListItem(statement, indices: indices)
 }
 
-/**
- * Fetch the ``ListItem`` record related to itself (`nextId`).
- * 
- * This fetches the related ``ListItem`` record using the
- * ``ListItem/nextId`` property.
- * 
- * Example:
- * ```swift
- * let sourceRecord  : ListItem = ...
- * let relatedRecord = sqlite3_list_item_find(db, forNext: sourceRecord)
- * ```
- * 
- * - Parameters:
- *   - db: The SQLite database handle (as returned by `sqlite3_open`)
- *   - record: The ``ListItem`` record.
- * - Returns: The related ``ListItem`` record, or `nil` if not found/error.
- */
+/// Fetch the ``ListItem`` record related to itself (`nextId`).
+/// 
+/// This fetches the related ``ListItem`` record using the
+/// ``ListItem/nextId`` property.
+/// 
+/// Example:
+/// ```swift
+/// let sourceRecord  : ListItem = ...
+/// let relatedRecord = sqlite3_list_item_find(db, forNext: sourceRecord)
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - record: The ``ListItem`` record.
+/// - Returns: The related ``ListItem`` record, or `nil` if not found/error.
 @inlinable
 public func sqlite3_list_item_find(
 	_ db: OpaquePointer!,
@@ -894,25 +860,23 @@ public func sqlite3_list_item_find(
 	return FingerStringDB.ListItem(statement, indices: indices)
 }
 
-/**
- * Fetches the ``FingerStringDB/ListItem`` records related to itself (`parentId`).
- * 
- * This fetches the related ``FingerStringDB/ListItem`` records using the
- * ``FingerStringDB/ListItem/parentId`` property.
- * 
- * Example:
- * ```swift
- * let record         : ListItem = ...
- * let relatedRecords = sqlite3_list_items_fetch(db, forParent: record)
- * ```
- * 
- * - Parameters:
- *   - db: The SQLite database handle (as returned by `sqlite3_open`)
- *   - record: The ``FingerStringDB/ListItem`` record.
- *   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
- *   - limit: An optional fetch limit.
- * - Returns: The related ``FingerStringDB/ListItem`` records.
- */
+/// Fetches the ``FingerStringDB/ListItem`` records related to itself (`parentId`).
+/// 
+/// This fetches the related ``FingerStringDB/ListItem`` records using the
+/// ``FingerStringDB/ListItem/parentId`` property.
+/// 
+/// Example:
+/// ```swift
+/// let record         : ListItem = ...
+/// let relatedRecords = sqlite3_list_items_fetch(db, forParent: record)
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - record: The ``FingerStringDB/ListItem`` record.
+///   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
+///   - limit: An optional fetch limit.
+/// - Returns: The related ``FingerStringDB/ListItem`` records.
 @inlinable
 public func sqlite3_list_items_fetch(
 	_ db: OpaquePointer!,
@@ -949,25 +913,23 @@ public func sqlite3_list_items_fetch(
 	return records
 }
 
-/**
- * Fetches the ``FingerStringDB/ListItem`` records related to itself (`nextId`).
- * 
- * This fetches the related ``FingerStringDB/ListItem`` records using the
- * ``FingerStringDB/ListItem/nextId`` property.
- * 
- * Example:
- * ```swift
- * let record         : ListItem = ...
- * let relatedRecords = sqlite3_list_items_fetch(db, forNext: record)
- * ```
- * 
- * - Parameters:
- *   - db: The SQLite database handle (as returned by `sqlite3_open`)
- *   - record: The ``FingerStringDB/ListItem`` record.
- *   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
- *   - limit: An optional fetch limit.
- * - Returns: The related ``FingerStringDB/ListItem`` records.
- */
+/// Fetches the ``FingerStringDB/ListItem`` records related to itself (`nextId`).
+/// 
+/// This fetches the related ``FingerStringDB/ListItem`` records using the
+/// ``FingerStringDB/ListItem/nextId`` property.
+/// 
+/// Example:
+/// ```swift
+/// let record         : ListItem = ...
+/// let relatedRecords = sqlite3_list_items_fetch(db, forNext: record)
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - record: The ``FingerStringDB/ListItem`` record.
+///   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
+///   - limit: An optional fetch limit.
+/// - Returns: The related ``FingerStringDB/ListItem`` records.
 @inlinable
 public func sqlite3_list_items_fetch(
 	_ db: OpaquePointer!,
@@ -1004,74 +966,70 @@ public func sqlite3_list_items_fetch(
 	return records
 }
 
-/**
- * A structure representing a SQLite database.
- * 
- * ### Database Schema
- * 
- * The schema captures the SQLite table/view catalog as safe Swift types.
- * 
- * #### Tables
- * 
- * - ``TaskList`` (SQL: `task_list`)
- * - ``ListItem`` (SQL: `list_item`)
- * 
- * > Hint: Use [SQL Views](https://www.sqlite.org/lang_createview.html)
- * >       to create Swift types that represent common queries.
- * >       (E.g. joins between tables or fragments of table data.)
- * 
- * ### Examples
- * 
- * Perform record operations on ``TaskList`` records:
- * ```swift
- * let records = try await db.taskLists.filter(orderBy: \.slug) {
- *   $0.slug != nil
- * }
- * 
- * try await db.transaction { tx in
- *   var record = try tx.taskLists.find(2) // find by primaryKey
- *   
- *   record.slug = "Hunt"
- *   try tx.update(record)
- * 
- *   let newRecord = try tx.insert(record)
- *   try tx.delete(newRecord)
- * }
- * ```
- * 
- * Perform column selects on the `task_list` table:
- * ```swift
- * let values = try await db.select(from: \.taskLists, \.slug) {
- *   $0.in([ 2, 3 ])
- * }
- * ```
- * 
- * Perform low level operations on ``TaskList`` records:
- * ```swift
- * var db : OpaquePointer?
- * sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE, nil)
- * 
- * var records = sqlite3_task_lists_fetch(db, orderBy: "slug", limit: 5) {
- *   $0.slug != nil
- * }!
- * records[1].slug = "Hunt"
- * sqlite3_task_lists_update(db, records[1])
- * 
- * sqlite3_task_lists_delete(db, records[0])
- * sqlite3_task_lists_insert(db, records[0]) // re-add
- * ```
- */
+/// A structure representing a SQLite database.
+/// 
+/// ### Database Schema
+/// 
+/// The schema captures the SQLite table/view catalog as safe Swift types.
+/// 
+/// #### Tables
+/// 
+/// - ``TaskList`` (SQL: `task_list`)
+/// - ``ListItem`` (SQL: `list_item`)
+/// 
+/// > Hint: Use [SQL Views](https://www.sqlite.org/lang_createview.html)
+/// >       to create Swift types that represent common queries.
+/// >       (E.g. joins between tables or fragments of table data.)
+/// 
+/// ### Examples
+/// 
+/// Perform record operations on ``TaskList`` records:
+/// ```swift
+/// let records = try await db.taskLists.filter(orderBy: \.slug) {
+///   $0.slug != nil
+/// }
+/// 
+/// try await db.transaction { tx in
+///   var record = try tx.taskLists.find(2) // find by primaryKey
+///   
+///   record.slug = "Hunt"
+///   try tx.update(record)
+/// 
+///   let newRecord = try tx.insert(record)
+///   try tx.delete(newRecord)
+/// }
+/// ```
+/// 
+/// Perform column selects on the `task_list` table:
+/// ```swift
+/// let values = try await db.select(from: \.taskLists, \.slug) {
+///   $0.in([ 2, 3 ])
+/// }
+/// ```
+/// 
+/// Perform low level operations on ``TaskList`` records:
+/// ```swift
+/// var db : OpaquePointer?
+/// sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE, nil)
+/// 
+/// var records = sqlite3_task_lists_fetch(db, orderBy: "slug", limit: 5) {
+///   $0.slug != nil
+/// }!
+/// records[1].slug = "Hunt"
+/// sqlite3_task_lists_update(db, records[1])
+/// 
+/// sqlite3_task_lists_delete(db, records[0])
+/// sqlite3_task_lists_insert(db, records[0]) // re-add
+/// ```
 @dynamicMemberLookup
 public struct FingerStringDB : SQLDatabase, SQLDatabaseAsyncChangeOperations, SQLCreationStatementsHolder {
 	
-	/**
-	 * Mappings of table/view Swift types to their "reference name".
-	 * 
-	 * The `RecordTypes` structure contains a variable for the Swift type
-	 * associated each table/view of the database. It maps the tables
-	 * "reference names" (e.g. ``taskLists``) to the
-	 * "record type" of the table (e.g. ``TaskList``.self).
-	 */
+	/// Mappings of table/view Swift types to their "reference name".
+	/// 
+	/// The `RecordTypes` structure contains a variable for the Swift type
+	/// associated each table/view of the database. It maps the tables
+	/// "reference names" (e.g. ``taskLists``) to the
+	/// "record type" of the table (e.g. ``TaskList``.self).
 	public struct RecordTypes : Swift.Sendable {
 		
 		/// Returns the TaskList type information (SQL: `task_list`).
@@ -1081,67 +1039,65 @@ public struct FingerStringDB : SQLDatabase, SQLDatabaseAsyncChangeOperations, SQ
 		public let listItems = ListItem.self
 	}
 	
-	/**
-	 * Record representing the `task_list` SQL table.
-	 * 
-	 * Record types represent rows within tables&views in a SQLite database.
-	 * They are returned by the functions or queries/filters generated by
-	 * Enlighter.
-	 * 
-	 * ### Examples
-	 * 
-	 * Perform record operations on ``TaskList`` records:
-	 * ```swift
-	 * let records = try await db.taskLists.filter(orderBy: \.slug) {
-	 *   $0.slug != nil
-	 * }
-	 * 
-	 * try await db.transaction { tx in
-	 *   var record = try tx.taskLists.find(2) // find by primaryKey
-	 *   
-	 *   record.slug = "Hunt"
-	 *   try tx.update(record)
-	 * 
-	 *   let newRecord = try tx.insert(record)
-	 *   try tx.delete(newRecord)
-	 * }
-	 * ```
-	 * 
-	 * Perform column selects on the `task_list` table:
-	 * ```swift
-	 * let values = try await db.select(from: \.taskLists, \.slug) {
-	 *   $0.in([ 2, 3 ])
-	 * }
-	 * ```
-	 * 
-	 * Perform low level operations on ``TaskList`` records:
-	 * ```swift
-	 * var db : OpaquePointer?
-	 * sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE, nil)
-	 * 
-	 * var records = sqlite3_task_lists_fetch(db, orderBy: "slug", limit: 5) {
-	 *   $0.slug != nil
-	 * }!
-	 * records[1].slug = "Hunt"
-	 * sqlite3_task_lists_update(db, records[1])
-	 * 
-	 * sqlite3_task_lists_delete(db, records[0])
-	 * sqlite3_task_lists_insert(db, records[0]) // re-add
-	 * ```
-	 * 
-	 * ### SQL
-	 * 
-	 * The SQL used to create the table associated with the record:
-	 * ```sql
-	 * CREATE TABLE task_list (
-	 * 	id INTEGER PRIMARY KEY NOT NULL,
-	 * 	slug TEXT UNIQUE NOT NULL,
-	 * 	title TEXT,
-	 * 	description TEXT,
-	 * 	first_item_id INTEGER
-	 * )
-	 * ```
-	 */
+	/// Record representing the `task_list` SQL table.
+	/// 
+	/// Record types represent rows within tables&views in a SQLite database.
+	/// They are returned by the functions or queries/filters generated by
+	/// Enlighter.
+	/// 
+	/// ### Examples
+	/// 
+	/// Perform record operations on ``TaskList`` records:
+	/// ```swift
+	/// let records = try await db.taskLists.filter(orderBy: \.slug) {
+	///   $0.slug != nil
+	/// }
+	/// 
+	/// try await db.transaction { tx in
+	///   var record = try tx.taskLists.find(2) // find by primaryKey
+	///   
+	///   record.slug = "Hunt"
+	///   try tx.update(record)
+	/// 
+	///   let newRecord = try tx.insert(record)
+	///   try tx.delete(newRecord)
+	/// }
+	/// ```
+	/// 
+	/// Perform column selects on the `task_list` table:
+	/// ```swift
+	/// let values = try await db.select(from: \.taskLists, \.slug) {
+	///   $0.in([ 2, 3 ])
+	/// }
+	/// ```
+	/// 
+	/// Perform low level operations on ``TaskList`` records:
+	/// ```swift
+	/// var db : OpaquePointer?
+	/// sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE, nil)
+	/// 
+	/// var records = sqlite3_task_lists_fetch(db, orderBy: "slug", limit: 5) {
+	///   $0.slug != nil
+	/// }!
+	/// records[1].slug = "Hunt"
+	/// sqlite3_task_lists_update(db, records[1])
+	/// 
+	/// sqlite3_task_lists_delete(db, records[0])
+	/// sqlite3_task_lists_insert(db, records[0]) // re-add
+	/// ```
+	/// 
+	/// ### SQL
+	/// 
+	/// The SQL used to create the table associated with the record:
+	/// ```sql
+	/// CREATE TABLE task_list (
+	/// 	id INTEGER PRIMARY KEY NOT NULL,
+	/// 	slug TEXT UNIQUE NOT NULL,
+	/// 	title TEXT,
+	/// 	description TEXT,
+	/// 	first_item_id INTEGER
+	/// )
+	/// ```
 	public struct TaskList : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
 		
 		/// Static SQL type information for the ``TaskList`` record.
@@ -1162,16 +1118,14 @@ public struct FingerStringDB : SQLDatabase, SQLDatabaseAsyncChangeOperations, SQ
 		/// Column `first_item_id` (`INTEGER`), optional (default: `nil`).
 		public var firstItemId : Int?
 		
-		/**
-		 * Initialize a new ``TaskList`` record.
-		 * 
-		 * - Parameters:
-		 *   - id: Primary key `id` (`INTEGER`), required.
-		 *   - slug: Column `slug` (`TEXT`), required.
-		 *   - title: Column `title` (`TEXT`), optional (default: `nil`).
-		 *   - description: Column `description` (`TEXT`), optional (default: `nil`).
-		 *   - firstItemId: Column `first_item_id` (`INTEGER`), optional (default: `nil`).
-		 */
+		/// Initialize a new ``TaskList`` record.
+		/// 
+		/// - Parameters:
+		///   - id: Primary key `id` (`INTEGER`), required.
+		///   - slug: Column `slug` (`TEXT`), required.
+		///   - title: Column `title` (`TEXT`), optional (default: `nil`).
+		///   - description: Column `description` (`TEXT`), optional (default: `nil`).
+		///   - firstItemId: Column `first_item_id` (`INTEGER`), optional (default: `nil`).
 		@inlinable
 		public init(
 			id: Int = Int.min,
@@ -1189,72 +1143,70 @@ public struct FingerStringDB : SQLDatabase, SQLDatabaseAsyncChangeOperations, SQ
 		}
 	}
 	
-	/**
-	 * Record representing the `list_item` SQL table.
-	 * 
-	 * Record types represent rows within tables&views in a SQLite database.
-	 * They are returned by the functions or queries/filters generated by
-	 * Enlighter.
-	 * 
-	 * ### Examples
-	 * 
-	 * Perform record operations on ``ListItem`` records:
-	 * ```swift
-	 * let records = try await db.listItems.filter(orderBy: \.itemId) {
-	 *   $0.itemId != nil
-	 * }
-	 * 
-	 * try await db.transaction { tx in
-	 *   var record = try tx.listItems.find(2) // find by primaryKey
-	 *   
-	 *   record.itemId = "Hunt"
-	 *   try tx.update(record)
-	 * 
-	 *   let newRecord = try tx.insert(record)
-	 *   try tx.delete(newRecord)
-	 * }
-	 * ```
-	 * 
-	 * Perform column selects on the `list_item` table:
-	 * ```swift
-	 * let values = try await db.select(from: \.listItems, \.itemId) {
-	 *   $0.in([ 2, 3 ])
-	 * }
-	 * ```
-	 * 
-	 * Perform low level operations on ``ListItem`` records:
-	 * ```swift
-	 * var db : OpaquePointer?
-	 * sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE, nil)
-	 * 
-	 * var records = sqlite3_list_items_fetch(db, orderBy: "itemId", limit: 5) {
-	 *   $0.itemId != nil
-	 * }!
-	 * records[1].itemId = "Hunt"
-	 * sqlite3_list_items_update(db, records[1])
-	 * 
-	 * sqlite3_list_items_delete(db, records[0])
-	 * sqlite3_list_items_insert(db, records[0]) // re-add
-	 * ```
-	 * 
-	 * ### SQL
-	 * 
-	 * The SQL used to create the table associated with the record:
-	 * ```sql
-	 * CREATE TABLE list_item (
-	 * 	id INTEGER PRIMARY KEY NOT NULL,
-	 * 	list_id INTEGER NOT NULL,
-	 * 	parent_id INTEGER,
-	 * 	next_id INTEGER,
-	 * 	item_id TEXT NOT NULL,
-	 * 	label TEXT NOT NULL,
-	 * 	note TEXT,
-	 * 	FOREIGN KEY(list_id) REFERENCES task_list(id),
-	 * 	FOREIGN KEY(parent_id) REFERENCES list_item(id),
-	 * 	FOREIGN KEY(next_id) REFERENCES list_item(id)
-	 * )
-	 * ```
-	 */
+	/// Record representing the `list_item` SQL table.
+	/// 
+	/// Record types represent rows within tables&views in a SQLite database.
+	/// They are returned by the functions or queries/filters generated by
+	/// Enlighter.
+	/// 
+	/// ### Examples
+	/// 
+	/// Perform record operations on ``ListItem`` records:
+	/// ```swift
+	/// let records = try await db.listItems.filter(orderBy: \.itemId) {
+	///   $0.itemId != nil
+	/// }
+	/// 
+	/// try await db.transaction { tx in
+	///   var record = try tx.listItems.find(2) // find by primaryKey
+	///   
+	///   record.itemId = "Hunt"
+	///   try tx.update(record)
+	/// 
+	///   let newRecord = try tx.insert(record)
+	///   try tx.delete(newRecord)
+	/// }
+	/// ```
+	/// 
+	/// Perform column selects on the `list_item` table:
+	/// ```swift
+	/// let values = try await db.select(from: \.listItems, \.itemId) {
+	///   $0.in([ 2, 3 ])
+	/// }
+	/// ```
+	/// 
+	/// Perform low level operations on ``ListItem`` records:
+	/// ```swift
+	/// var db : OpaquePointer?
+	/// sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE, nil)
+	/// 
+	/// var records = sqlite3_list_items_fetch(db, orderBy: "itemId", limit: 5) {
+	///   $0.itemId != nil
+	/// }!
+	/// records[1].itemId = "Hunt"
+	/// sqlite3_list_items_update(db, records[1])
+	/// 
+	/// sqlite3_list_items_delete(db, records[0])
+	/// sqlite3_list_items_insert(db, records[0]) // re-add
+	/// ```
+	/// 
+	/// ### SQL
+	/// 
+	/// The SQL used to create the table associated with the record:
+	/// ```sql
+	/// CREATE TABLE list_item (
+	/// 	id INTEGER PRIMARY KEY NOT NULL,
+	/// 	list_id INTEGER NOT NULL,
+	/// 	parent_id INTEGER,
+	/// 	next_id INTEGER,
+	/// 	item_id TEXT NOT NULL,
+	/// 	label TEXT NOT NULL,
+	/// 	note TEXT,
+	/// 	FOREIGN KEY(list_id) REFERENCES task_list(id),
+	/// 	FOREIGN KEY(parent_id) REFERENCES list_item(id),
+	/// 	FOREIGN KEY(next_id) REFERENCES list_item(id)
+	/// )
+	/// ```
 	public struct ListItem : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
 		
 		/// Static SQL type information for the ``ListItem`` record.
@@ -1281,18 +1233,16 @@ public struct FingerStringDB : SQLDatabase, SQLDatabaseAsyncChangeOperations, SQ
 		/// Column `note` (`TEXT`), optional (default: `nil`).
 		public var note : String?
 		
-		/**
-		 * Initialize a new ``ListItem`` record.
-		 * 
-		 * - Parameters:
-		 *   - id: Primary key `id` (`INTEGER`), required.
-		 *   - listId: Column `list_id` (`INTEGER`), required.
-		 *   - parentId: Column `parent_id` (`INTEGER`), optional (default: `nil`).
-		 *   - nextId: Column `next_id` (`INTEGER`), optional (default: `nil`).
-		 *   - itemId: Column `item_id` (`TEXT`), required.
-		 *   - label: Column `label` (`TEXT`), required.
-		 *   - note: Column `note` (`TEXT`), optional (default: `nil`).
-		 */
+		/// Initialize a new ``ListItem`` record.
+		/// 
+		/// - Parameters:
+		///   - id: Primary key `id` (`INTEGER`), required.
+		///   - listId: Column `list_id` (`INTEGER`), required.
+		///   - parentId: Column `parent_id` (`INTEGER`), optional (default: `nil`).
+		///   - nextId: Column `next_id` (`INTEGER`), optional (default: `nil`).
+		///   - itemId: Column `item_id` (`TEXT`), required.
+		///   - label: Column `label` (`TEXT`), required.
+		///   - note: Column `note` (`TEXT`), optional (default: `nil`).
 		@inlinable
 		public init(
 			id: Int = Int.min,
@@ -1349,55 +1299,51 @@ public struct FingerStringDB : SQLDatabase, SQLDatabaseAsyncChangeOperations, SQ
 	/// The `connectionHandler` is used to open SQLite database connections.
 	public var connectionHandler : SQLConnectionHandler
 	
-	/**
-	 * Initialize ``FingerStringDB`` with a `URL`.
-	 * 
-	 * Configures the database with a simple connection pool opening the
-	 * specified `URL`.
-	 * And optional `readOnly` flag can be set (defaults to `false`).
-	 * 
-	 * Example:
-	 * ```swift
-	 * let db = FingerStringDB(url: ...)
-	 * 
-	 * // Write operations will raise an error.
-	 * let readOnly = FingerStringDB(
-	 *   url: Bundle.module.url(forResource: "samples", withExtension: "db"),
-	 *   readOnly: true
-	 * )
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - url: A `URL` pointing to the database to be used.
-	 *   - readOnly: Whether the database should be opened readonly (default: `false`).
-	 */
+	/// Initialize ``FingerStringDB`` with a `URL`.
+	/// 
+	/// Configures the database with a simple connection pool opening the
+	/// specified `URL`.
+	/// And optional `readOnly` flag can be set (defaults to `false`).
+	/// 
+	/// Example:
+	/// ```swift
+	/// let db = FingerStringDB(url: ...)
+	/// 
+	/// // Write operations will raise an error.
+	/// let readOnly = FingerStringDB(
+	///   url: Bundle.module.url(forResource: "samples", withExtension: "db"),
+	///   readOnly: true
+	/// )
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - url: A `URL` pointing to the database to be used.
+	///   - readOnly: Whether the database should be opened readonly (default: `false`).
 	@inlinable
 	public init(url: URL, readOnly: Bool = false)
 	{
 		self.connectionHandler = .simplePool(url: url, readOnly: readOnly)
 	}
 	
-	/**
-	 * Initialize ``FingerStringDB`` w/ a `SQLConnectionHandler`.
-	 * 
-	 * `SQLConnectionHandler`'s are used to open SQLite database connections when
-	 * queries are run using the `Lighter` APIs.
-	 * The `SQLConnectionHandler` is a protocol and custom handlers
-	 * can be provided.
-	 * 
-	 * Example:
-	 * ```swift
-	 * let db = FingerStringDB(connectionHandler: .simplePool(
-	 *   url: Bundle.module.url(forResource: "samples", withExtension: "db"),
-	 *   readOnly: true,
-	 *   maxAge: 10,
-	 *   maximumPoolSizePerConfiguration: 4
-	 * ))
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - connectionHandler: The `SQLConnectionHandler` to use w/ the database.
-	 */
+	/// Initialize ``FingerStringDB`` w/ a `SQLConnectionHandler`.
+	/// 
+	/// `SQLConnectionHandler`'s are used to open SQLite database connections when
+	/// queries are run using the `Lighter` APIs.
+	/// The `SQLConnectionHandler` is a protocol and custom handlers
+	/// can be provided.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let db = FingerStringDB(connectionHandler: .simplePool(
+	///   url: Bundle.module.url(forResource: "samples", withExtension: "db"),
+	///   readOnly: true,
+	///   maxAge: 10,
+	///   maximumPoolSizePerConfiguration: 4
+	/// ))
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - connectionHandler: The `SQLConnectionHandler` to use w/ the database.
 	@inlinable
 	public init(connectionHandler: SQLConnectionHandler)
 	{
@@ -1407,13 +1353,11 @@ public struct FingerStringDB : SQLDatabase, SQLDatabaseAsyncChangeOperations, SQ
 
 public extension FingerStringDB.TaskList {
 	
-	/**
-	 * Static type information for the ``TaskList`` record (`task_list` SQL table).
-	 * 
-	 * This structure captures the static SQL information associated with the
-	 * record.
-	 * It is used for static type lookups and more.
-	 */
+	/// Static type information for the ``TaskList`` record (`task_list` SQL table).
+	/// 
+	/// This structure captures the static SQL information associated with the
+	/// record.
+	/// It is used for static type lookups and more.
 	struct Schema : SQLKeyedTableSchema, SQLSwiftMatchableSchema, SQLCreatableSchema {
 		
 		public typealias PropertyIndices = ( idx_id: Int32, idx_slug: Int32, idx_title: Int32, idx_description: Int32, idx_firstItemId: Int32 )
@@ -1478,21 +1422,19 @@ public extension FingerStringDB.TaskList {
 		/// Property parameter indicies in the ``delete`` SQL
 		public static let deleteParameterIndices : PropertyIndices = ( 1, -1, -1, -1, -1 )
 		
-		/**
-		 * Lookup property indices by column name in a statement handle.
-		 * 
-		 * Properties are ordered in the schema and have a specific index
-		 * assigned.
-		 * E.g. if the record has two properties, `id` and `name`,
-		 * and the query was `SELECT age, task_list_id FROM task_list`,
-		 * this would return `( idx_id: 1, idx_name: -1 )`.
-		 * Because the `task_list_id` is in the second position and `name`
-		 * isn't provided at all.
-		 * 
-		 * - Parameters:
-		 *   - statement: A raw SQLite3 prepared statement handle.
-		 * - Returns: The positions of the properties in the prepared statement.
-		 */
+		/// Lookup property indices by column name in a statement handle.
+		/// 
+		/// Properties are ordered in the schema and have a specific index
+		/// assigned.
+		/// E.g. if the record has two properties, `id` and `name`,
+		/// and the query was `SELECT age, task_list_id FROM task_list`,
+		/// this would return `( idx_id: 1, idx_name: -1 )`.
+		/// Because the `task_list_id` is in the second position and `name`
+		/// isn't provided at all.
+		/// 
+		/// - Parameters:
+		///   - statement: A raw SQLite3 prepared statement handle.
+		/// - Returns: The positions of the properties in the prepared statement.
 		@inlinable
 		public static func lookupColumnIndices(`in` statement: OpaquePointer!)
 			-> PropertyIndices
@@ -1519,18 +1461,16 @@ public extension FingerStringDB.TaskList {
 			return indices
 		}
 		
-		/**
-		 * Register the Swift matcher function for the ``TaskList`` record.
-		 * 
-		 * SQLite Swift matcher functions are used to process `filter` queries
-		 * and low-level matching w/o the Lighter library.
-		 * 
-		 * - Parameters:
-		 *   - unsafeDatabaseHandle: SQLite3 database handle.
-		 *   - flags: SQLite3 function registration flags, default: `SQLITE_UTF8`
-		 *   - matcher: A pointer to the Swift closure used to filter the records.
-		 * - Returns: The result code of `sqlite3_create_function`, e.g. `SQLITE_OK`.
-		 */
+		/// Register the Swift matcher function for the ``TaskList`` record.
+		/// 
+		/// SQLite Swift matcher functions are used to process `filter` queries
+		/// and low-level matching w/o the Lighter library.
+		/// 
+		/// - Parameters:
+		///   - unsafeDatabaseHandle: SQLite3 database handle.
+		///   - flags: SQLite3 function registration flags, default: `SQLITE_UTF8`
+		///   - matcher: A pointer to the Swift closure used to filter the records.
+		/// - Returns: The result code of `sqlite3_create_function`, e.g. `SQLITE_OK`.
 		@inlinable
 		@discardableResult
 		public static func registerSwiftMatcher(
@@ -1573,17 +1513,15 @@ public extension FingerStringDB.TaskList {
 			)
 		}
 		
-		/**
-		 * Unregister the Swift matcher function for the ``TaskList`` record.
-		 * 
-		 * SQLite Swift matcher functions are used to process `filter` queries
-		 * and low-level matching w/o the Lighter library.
-		 * 
-		 * - Parameters:
-		 *   - unsafeDatabaseHandle: SQLite3 database handle.
-		 *   - flags: SQLite3 function registration flags, default: `SQLITE_UTF8`
-		 * - Returns: The result code of `sqlite3_create_function`, e.g. `SQLITE_OK`.
-		 */
+		/// Unregister the Swift matcher function for the ``TaskList`` record.
+		/// 
+		/// SQLite Swift matcher functions are used to process `filter` queries
+		/// and low-level matching w/o the Lighter library.
+		/// 
+		/// - Parameters:
+		///   - unsafeDatabaseHandle: SQLite3 database handle.
+		///   - flags: SQLite3 function registration flags, default: `SQLITE_UTF8`
+		/// - Returns: The result code of `sqlite3_create_function`, e.g. `SQLITE_OK`.
 		@inlinable
 		@discardableResult
 		public static func unregisterSwiftMatcher(
@@ -1647,38 +1585,36 @@ public extension FingerStringDB.TaskList {
 		}
 	}
 	
-	/**
-	 * Initialize a ``TaskList`` record from a SQLite statement handle.
-	 * 
-	 * This initializer allows easy setup of a record structure from an
-	 * otherwise arbitrarily constructed SQLite prepared statement.
-	 * 
-	 * If no `indices` are specified, the `Schema/lookupColumnIndices`
-	 * function will be used to find the positions of the structure properties
-	 * based on their external name.
-	 * When looping, it is recommended to do the lookup once, and then
-	 * provide the `indices` to the initializer.
-	 * 
-	 * Required values that are missing in the statement are replaced with
-	 * their assigned default values, i.e. this can even be used to perform
-	 * partial selects w/ only a minor overhead (the extra space for a
-	 * record).
-	 * 
-	 * Example:
-	 * ```swift
-	 * var statement : OpaquePointer?
-	 * sqlite3_prepare_v2(dbHandle, "SELECT * FROM task_list", -1, &statement, nil)
-	 * while sqlite3_step(statement) == SQLITE_ROW {
-	 *   let record = TaskList(statement)
-	 *   print("Fetched:", record)
-	 * }
-	 * sqlite3_finalize(statement)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - statement: Statement handle as returned by `sqlite3_prepare*` functions.
-	 *   - indices: Property bindings positions, defaults to `nil` (automatic lookup).
-	 */
+	/// Initialize a ``TaskList`` record from a SQLite statement handle.
+	/// 
+	/// This initializer allows easy setup of a record structure from an
+	/// otherwise arbitrarily constructed SQLite prepared statement.
+	/// 
+	/// If no `indices` are specified, the `Schema/lookupColumnIndices`
+	/// function will be used to find the positions of the structure properties
+	/// based on their external name.
+	/// When looping, it is recommended to do the lookup once, and then
+	/// provide the `indices` to the initializer.
+	/// 
+	/// Required values that are missing in the statement are replaced with
+	/// their assigned default values, i.e. this can even be used to perform
+	/// partial selects w/ only a minor overhead (the extra space for a
+	/// record).
+	/// 
+	/// Example:
+	/// ```swift
+	/// var statement : OpaquePointer?
+	/// sqlite3_prepare_v2(dbHandle, "SELECT * FROM task_list", -1, &statement, nil)
+	/// while sqlite3_step(statement) == SQLITE_ROW {
+	///   let record = TaskList(statement)
+	///   print("Fetched:", record)
+	/// }
+	/// sqlite3_finalize(statement)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - statement: Statement handle as returned by `sqlite3_prepare*` functions.
+	///   - indices: Property bindings positions, defaults to `nil` (automatic lookup).
 	@inlinable
 	init(_ statement: OpaquePointer!, indices: Schema.PropertyIndices? = nil)
 	{
@@ -1693,33 +1629,31 @@ public extension FingerStringDB.TaskList {
 		)
 	}
 	
-	/**
-	 * Bind all ``TaskList`` properties to a prepared statement and call a closure.
-	 * 
-	 * *Important*: The bindings are only valid within the closure being executed!
-	 * 
-	 * Example:
-	 * ```swift
-	 * var statement : OpaquePointer?
-	 * sqlite3_prepare_v2(
-	 *   dbHandle,
-	 *   #"UPDATE "task_list" SET "slug" = ?, "title" = ?, "description" = ?, "first_item_id" = ? WHERE "id" = ?"#,
-	 *   -1, &statement, nil
-	 * )
-	 * 
-	 * let record = TaskList(id: 1, slug: "Hello", title: "World", description: "Duck", firstItemId: 2)
-	 * let ok = record.bind(to: statement, indices: ( 5, 1, 2, 3, 4 )) {
-	 *   sqlite3_step(statement) == SQLITE_DONE
-	 * }
-	 * sqlite3_finalize(statement)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - statement: A SQLite3 statement handle as returned by the `sqlite3_prepare*` functions.
-	 *   - indices: The parameter positions for the bindings.
-	 *   - execute: Closure executed with bindings applied, bindings _only_ valid within the call!
-	 * - Returns: Returns the result of the closure that is passed in.
-	 */
+	/// Bind all ``TaskList`` properties to a prepared statement and call a closure.
+	/// 
+	/// *Important*: The bindings are only valid within the closure being executed!
+	/// 
+	/// Example:
+	/// ```swift
+	/// var statement : OpaquePointer?
+	/// sqlite3_prepare_v2(
+	///   dbHandle,
+	///   #"UPDATE "task_list" SET "slug" = ?, "title" = ?, "description" = ?, "first_item_id" = ? WHERE "id" = ?"#,
+	///   -1, &statement, nil
+	/// )
+	/// 
+	/// let record = TaskList(id: 1, slug: "Hello", title: "World", description: "Duck", firstItemId: 2)
+	/// let ok = record.bind(to: statement, indices: ( 5, 1, 2, 3, 4 )) {
+	///   sqlite3_step(statement) == SQLITE_DONE
+	/// }
+	/// sqlite3_finalize(statement)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - statement: A SQLite3 statement handle as returned by the `sqlite3_prepare*` functions.
+	///   - indices: The parameter positions for the bindings.
+	///   - execute: Closure executed with bindings applied, bindings _only_ valid within the call!
+	/// - Returns: Returns the result of the closure that is passed in.
 	@inlinable
 	@discardableResult
 	func bind<R>(
@@ -1760,13 +1694,11 @@ public extension FingerStringDB.TaskList {
 
 public extension FingerStringDB.ListItem {
 	
-	/**
-	 * Static type information for the ``ListItem`` record (`list_item` SQL table).
-	 * 
-	 * This structure captures the static SQL information associated with the
-	 * record.
-	 * It is used for static type lookups and more.
-	 */
+	/// Static type information for the ``ListItem`` record (`list_item` SQL table).
+	/// 
+	/// This structure captures the static SQL information associated with the
+	/// record.
+	/// It is used for static type lookups and more.
 	struct Schema : SQLKeyedTableSchema, SQLSwiftMatchableSchema, SQLCreatableSchema {
 		
 		public typealias PropertyIndices = ( idx_id: Int32, idx_listId: Int32, idx_parentId: Int32, idx_nextId: Int32, idx_itemId: Int32, idx_label: Int32, idx_note: Int32 )
@@ -1836,21 +1768,19 @@ public extension FingerStringDB.ListItem {
 		/// Property parameter indicies in the ``delete`` SQL
 		public static let deleteParameterIndices : PropertyIndices = ( 1, -1, -1, -1, -1, -1, -1 )
 		
-		/**
-		 * Lookup property indices by column name in a statement handle.
-		 * 
-		 * Properties are ordered in the schema and have a specific index
-		 * assigned.
-		 * E.g. if the record has two properties, `id` and `name`,
-		 * and the query was `SELECT age, list_item_id FROM list_item`,
-		 * this would return `( idx_id: 1, idx_name: -1 )`.
-		 * Because the `list_item_id` is in the second position and `name`
-		 * isn't provided at all.
-		 * 
-		 * - Parameters:
-		 *   - statement: A raw SQLite3 prepared statement handle.
-		 * - Returns: The positions of the properties in the prepared statement.
-		 */
+		/// Lookup property indices by column name in a statement handle.
+		/// 
+		/// Properties are ordered in the schema and have a specific index
+		/// assigned.
+		/// E.g. if the record has two properties, `id` and `name`,
+		/// and the query was `SELECT age, list_item_id FROM list_item`,
+		/// this would return `( idx_id: 1, idx_name: -1 )`.
+		/// Because the `list_item_id` is in the second position and `name`
+		/// isn't provided at all.
+		/// 
+		/// - Parameters:
+		///   - statement: A raw SQLite3 prepared statement handle.
+		/// - Returns: The positions of the properties in the prepared statement.
 		@inlinable
 		public static func lookupColumnIndices(`in` statement: OpaquePointer!)
 			-> PropertyIndices
@@ -1883,18 +1813,16 @@ public extension FingerStringDB.ListItem {
 			return indices
 		}
 		
-		/**
-		 * Register the Swift matcher function for the ``ListItem`` record.
-		 * 
-		 * SQLite Swift matcher functions are used to process `filter` queries
-		 * and low-level matching w/o the Lighter library.
-		 * 
-		 * - Parameters:
-		 *   - unsafeDatabaseHandle: SQLite3 database handle.
-		 *   - flags: SQLite3 function registration flags, default: `SQLITE_UTF8`
-		 *   - matcher: A pointer to the Swift closure used to filter the records.
-		 * - Returns: The result code of `sqlite3_create_function`, e.g. `SQLITE_OK`.
-		 */
+		/// Register the Swift matcher function for the ``ListItem`` record.
+		/// 
+		/// SQLite Swift matcher functions are used to process `filter` queries
+		/// and low-level matching w/o the Lighter library.
+		/// 
+		/// - Parameters:
+		///   - unsafeDatabaseHandle: SQLite3 database handle.
+		///   - flags: SQLite3 function registration flags, default: `SQLITE_UTF8`
+		///   - matcher: A pointer to the Swift closure used to filter the records.
+		/// - Returns: The result code of `sqlite3_create_function`, e.g. `SQLITE_OK`.
 		@inlinable
 		@discardableResult
 		public static func registerSwiftMatcher(
@@ -1939,17 +1867,15 @@ public extension FingerStringDB.ListItem {
 			)
 		}
 		
-		/**
-		 * Unregister the Swift matcher function for the ``ListItem`` record.
-		 * 
-		 * SQLite Swift matcher functions are used to process `filter` queries
-		 * and low-level matching w/o the Lighter library.
-		 * 
-		 * - Parameters:
-		 *   - unsafeDatabaseHandle: SQLite3 database handle.
-		 *   - flags: SQLite3 function registration flags, default: `SQLITE_UTF8`
-		 * - Returns: The result code of `sqlite3_create_function`, e.g. `SQLITE_OK`.
-		 */
+		/// Unregister the Swift matcher function for the ``ListItem`` record.
+		/// 
+		/// SQLite Swift matcher functions are used to process `filter` queries
+		/// and low-level matching w/o the Lighter library.
+		/// 
+		/// - Parameters:
+		///   - unsafeDatabaseHandle: SQLite3 database handle.
+		///   - flags: SQLite3 function registration flags, default: `SQLITE_UTF8`
+		/// - Returns: The result code of `sqlite3_create_function`, e.g. `SQLITE_OK`.
 		@inlinable
 		@discardableResult
 		public static func unregisterSwiftMatcher(
@@ -2030,38 +1956,36 @@ public extension FingerStringDB.ListItem {
 		}
 	}
 	
-	/**
-	 * Initialize a ``ListItem`` record from a SQLite statement handle.
-	 * 
-	 * This initializer allows easy setup of a record structure from an
-	 * otherwise arbitrarily constructed SQLite prepared statement.
-	 * 
-	 * If no `indices` are specified, the `Schema/lookupColumnIndices`
-	 * function will be used to find the positions of the structure properties
-	 * based on their external name.
-	 * When looping, it is recommended to do the lookup once, and then
-	 * provide the `indices` to the initializer.
-	 * 
-	 * Required values that are missing in the statement are replaced with
-	 * their assigned default values, i.e. this can even be used to perform
-	 * partial selects w/ only a minor overhead (the extra space for a
-	 * record).
-	 * 
-	 * Example:
-	 * ```swift
-	 * var statement : OpaquePointer?
-	 * sqlite3_prepare_v2(dbHandle, "SELECT * FROM list_item", -1, &statement, nil)
-	 * while sqlite3_step(statement) == SQLITE_ROW {
-	 *   let record = ListItem(statement)
-	 *   print("Fetched:", record)
-	 * }
-	 * sqlite3_finalize(statement)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - statement: Statement handle as returned by `sqlite3_prepare*` functions.
-	 *   - indices: Property bindings positions, defaults to `nil` (automatic lookup).
-	 */
+	/// Initialize a ``ListItem`` record from a SQLite statement handle.
+	/// 
+	/// This initializer allows easy setup of a record structure from an
+	/// otherwise arbitrarily constructed SQLite prepared statement.
+	/// 
+	/// If no `indices` are specified, the `Schema/lookupColumnIndices`
+	/// function will be used to find the positions of the structure properties
+	/// based on their external name.
+	/// When looping, it is recommended to do the lookup once, and then
+	/// provide the `indices` to the initializer.
+	/// 
+	/// Required values that are missing in the statement are replaced with
+	/// their assigned default values, i.e. this can even be used to perform
+	/// partial selects w/ only a minor overhead (the extra space for a
+	/// record).
+	/// 
+	/// Example:
+	/// ```swift
+	/// var statement : OpaquePointer?
+	/// sqlite3_prepare_v2(dbHandle, "SELECT * FROM list_item", -1, &statement, nil)
+	/// while sqlite3_step(statement) == SQLITE_ROW {
+	///   let record = ListItem(statement)
+	///   print("Fetched:", record)
+	/// }
+	/// sqlite3_finalize(statement)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - statement: Statement handle as returned by `sqlite3_prepare*` functions.
+	///   - indices: Property bindings positions, defaults to `nil` (automatic lookup).
 	@inlinable
 	init(_ statement: OpaquePointer!, indices: Schema.PropertyIndices? = nil)
 	{
@@ -2078,33 +2002,31 @@ public extension FingerStringDB.ListItem {
 		)
 	}
 	
-	/**
-	 * Bind all ``ListItem`` properties to a prepared statement and call a closure.
-	 * 
-	 * *Important*: The bindings are only valid within the closure being executed!
-	 * 
-	 * Example:
-	 * ```swift
-	 * var statement : OpaquePointer?
-	 * sqlite3_prepare_v2(
-	 *   dbHandle,
-	 *   #"UPDATE "list_item" SET "list_id" = ?, "parent_id" = ?, "next_id" = ?, "item_id" = ?, "label" = ?, "note" = ? WHERE "id" = ?"#,
-	 *   -1, &statement, nil
-	 * )
-	 * 
-	 * let record = ListItem(id: 1, listId: 2, parentId: 3, nextId: 4, itemId: "Hello", label: "World", note: "Duck")
-	 * let ok = record.bind(to: statement, indices: ( 7, 1, 2, 3, 4, 5, 6 )) {
-	 *   sqlite3_step(statement) == SQLITE_DONE
-	 * }
-	 * sqlite3_finalize(statement)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - statement: A SQLite3 statement handle as returned by the `sqlite3_prepare*` functions.
-	 *   - indices: The parameter positions for the bindings.
-	 *   - execute: Closure executed with bindings applied, bindings _only_ valid within the call!
-	 * - Returns: Returns the result of the closure that is passed in.
-	 */
+	/// Bind all ``ListItem`` properties to a prepared statement and call a closure.
+	/// 
+	/// *Important*: The bindings are only valid within the closure being executed!
+	/// 
+	/// Example:
+	/// ```swift
+	/// var statement : OpaquePointer?
+	/// sqlite3_prepare_v2(
+	///   dbHandle,
+	///   #"UPDATE "list_item" SET "list_id" = ?, "parent_id" = ?, "next_id" = ?, "item_id" = ?, "label" = ?, "note" = ? WHERE "id" = ?"#,
+	///   -1, &statement, nil
+	/// )
+	/// 
+	/// let record = ListItem(id: 1, listId: 2, parentId: 3, nextId: 4, itemId: "Hello", label: "World", note: "Duck")
+	/// let ok = record.bind(to: statement, indices: ( 7, 1, 2, 3, 4, 5, 6 )) {
+	///   sqlite3_step(statement) == SQLITE_DONE
+	/// }
+	/// sqlite3_finalize(statement)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - statement: A SQLite3 statement handle as returned by the `sqlite3_prepare*` functions.
+	///   - indices: The parameter positions for the bindings.
+	///   - execute: Closure executed with bindings applied, bindings _only_ valid within the call!
+	/// - Returns: Returns the result of the closure that is passed in.
 	@inlinable
 	@discardableResult
 	func bind<R>(
@@ -2158,22 +2080,20 @@ public extension SQLRecordFetchOperations
 	where T == FingerStringDB.TaskList, Ops: SQLDatabaseFetchOperations, Ops.RecordTypes == FingerStringDB.RecordTypes
 {
 	
-	/**
-	 * Fetch the ``FingerStringDB/TaskList`` record related to a ``FingerStringDB/ListItem`` (`listId`).
-	 * 
-	 * This fetches the related ``FingerStringDB/TaskList`` record using the
-	 * ``FingerStringDB/ListItem/listId`` property.
-	 * 
-	 * Example:
-	 * ```swift
-	 * let sourceRecord  : ListItem = ...
-	 * let relatedRecord = try db.taskLists.find(for: sourceRecord)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - record: The ``ListItem`` record.
-	 * - Returns: The related ``FingerStringDB/TaskList`` record (throws if not found).
-	 */
+	/// Fetch the ``FingerStringDB/TaskList`` record related to a ``FingerStringDB/ListItem`` (`listId`).
+	/// 
+	/// This fetches the related ``FingerStringDB/TaskList`` record using the
+	/// ``FingerStringDB/ListItem/listId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let sourceRecord  : ListItem = ...
+	/// let relatedRecord = try db.taskLists.find(for: sourceRecord)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``ListItem`` record.
+	/// - Returns: The related ``FingerStringDB/TaskList`` record (throws if not found).
 	@inlinable
 	func find(`for` record: FingerStringDB.ListItem) throws -> FingerStringDB.TaskList
 	{
@@ -2190,22 +2110,20 @@ public extension SQLRecordFetchOperations
 	where T == FingerStringDB.ListItem, Ops: SQLDatabaseFetchOperations, Ops.RecordTypes == FingerStringDB.RecordTypes
 {
 	
-	/**
-	 * Fetch the ``FingerStringDB/ListItem`` record related to itself (`parentId`).
-	 * 
-	 * This fetches the related ``FingerStringDB/ListItem`` record using the
-	 * ``FingerStringDB/ListItem/parentId`` property.
-	 * 
-	 * Example:
-	 * ```swift
-	 * let sourceRecord  : ListItem = ...
-	 * let relatedRecord = try db.listItems.find(forParent: sourceRecord)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - record: The ``ListItem`` record.
-	 * - Returns: The related ``FingerStringDB/ListItem`` record, or `nil` if not found.
-	 */
+	/// Fetch the ``FingerStringDB/ListItem`` record related to itself (`parentId`).
+	/// 
+	/// This fetches the related ``FingerStringDB/ListItem`` record using the
+	/// ``FingerStringDB/ListItem/parentId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let sourceRecord  : ListItem = ...
+	/// let relatedRecord = try db.listItems.find(forParent: sourceRecord)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``ListItem`` record.
+	/// - Returns: The related ``FingerStringDB/ListItem`` record, or `nil` if not found.
 	@inlinable
 	func find(forParent record: FingerStringDB.ListItem)
 		throws -> FingerStringDB.ListItem?
@@ -2213,22 +2131,20 @@ public extension SQLRecordFetchOperations
 		try operations[dynamicMember: \.listItems].findTarget(for: \.parentId, in: record)
 	}
 	
-	/**
-	 * Fetch the ``FingerStringDB/ListItem`` record related to itself (`nextId`).
-	 * 
-	 * This fetches the related ``FingerStringDB/ListItem`` record using the
-	 * ``FingerStringDB/ListItem/nextId`` property.
-	 * 
-	 * Example:
-	 * ```swift
-	 * let sourceRecord  : ListItem = ...
-	 * let relatedRecord = try db.listItems.find(forNext: sourceRecord)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - record: The ``ListItem`` record.
-	 * - Returns: The related ``FingerStringDB/ListItem`` record, or `nil` if not found.
-	 */
+	/// Fetch the ``FingerStringDB/ListItem`` record related to itself (`nextId`).
+	/// 
+	/// This fetches the related ``FingerStringDB/ListItem`` record using the
+	/// ``FingerStringDB/ListItem/nextId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let sourceRecord  : ListItem = ...
+	/// let relatedRecord = try db.listItems.find(forNext: sourceRecord)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``ListItem`` record.
+	/// - Returns: The related ``FingerStringDB/ListItem`` record, or `nil` if not found.
 	@inlinable
 	func find(forNext record: FingerStringDB.ListItem)
 		throws -> FingerStringDB.ListItem?
@@ -2236,23 +2152,21 @@ public extension SQLRecordFetchOperations
 		try operations[dynamicMember: \.listItems].findTarget(for: \.nextId, in: record)
 	}
 	
-	/**
-	 * Fetches the ``FingerStringDB/ListItem`` records related to a ``FingerStringDB/TaskList`` (`listId`).
-	 * 
-	 * This fetches the related ``FingerStringDB/TaskList`` records using the
-	 * ``FingerStringDB/ListItem/listId`` property.
-	 * 
-	 * Example:
-	 * ```swift
-	 * let record         : TaskList = ...
-	 * let relatedRecords = try db.listItems.fetch(forList: record)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - record: The ``FingerStringDB/TaskList`` record.
-	 *   - limit: An optional limit of records to fetch (defaults to `nil`).
-	 * - Returns: The related ``TaskList`` records.
-	 */
+	/// Fetches the ``FingerStringDB/ListItem`` records related to a ``FingerStringDB/TaskList`` (`listId`).
+	/// 
+	/// This fetches the related ``FingerStringDB/TaskList`` records using the
+	/// ``FingerStringDB/ListItem/listId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let record         : TaskList = ...
+	/// let relatedRecords = try db.listItems.fetch(forList: record)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``FingerStringDB/TaskList`` record.
+	///   - limit: An optional limit of records to fetch (defaults to `nil`).
+	/// - Returns: The related ``TaskList`` records.
 	@inlinable
 	func fetch(forList record: FingerStringDB.TaskList, limit: Int? = nil)
 		throws -> [ FingerStringDB.ListItem ]
@@ -2260,23 +2174,21 @@ public extension SQLRecordFetchOperations
 		try fetch(for: \.listId, in: record, limit: limit)
 	}
 	
-	/**
-	 * Fetches the ``FingerStringDB/ListItem`` records related to itself (`parentId`).
-	 * 
-	 * This fetches the related ``FingerStringDB/ListItem`` records using the
-	 * ``FingerStringDB/ListItem/parentId`` property.
-	 * 
-	 * Example:
-	 * ```swift
-	 * let record         : ListItem = ...
-	 * let relatedRecords = try db.listItems.fetch(forParent: record)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - record: The ``FingerStringDB/ListItem`` record.
-	 *   - limit: An optional limit of records to fetch (defaults to `nil`).
-	 * - Returns: The related ``ListItem`` records.
-	 */
+	/// Fetches the ``FingerStringDB/ListItem`` records related to itself (`parentId`).
+	/// 
+	/// This fetches the related ``FingerStringDB/ListItem`` records using the
+	/// ``FingerStringDB/ListItem/parentId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let record         : ListItem = ...
+	/// let relatedRecords = try db.listItems.fetch(forParent: record)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``FingerStringDB/ListItem`` record.
+	///   - limit: An optional limit of records to fetch (defaults to `nil`).
+	/// - Returns: The related ``ListItem`` records.
 	@inlinable
 	func fetch(forParent record: FingerStringDB.ListItem, limit: Int? = nil)
 		throws -> [ FingerStringDB.ListItem ]
@@ -2284,23 +2196,21 @@ public extension SQLRecordFetchOperations
 		try fetch(for: \.parentId, in: record, limit: limit)
 	}
 	
-	/**
-	 * Fetches the ``FingerStringDB/ListItem`` records related to itself (`nextId`).
-	 * 
-	 * This fetches the related ``FingerStringDB/ListItem`` records using the
-	 * ``FingerStringDB/ListItem/nextId`` property.
-	 * 
-	 * Example:
-	 * ```swift
-	 * let record         : ListItem = ...
-	 * let relatedRecords = try db.listItems.fetch(forNext: record)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - record: The ``FingerStringDB/ListItem`` record.
-	 *   - limit: An optional limit of records to fetch (defaults to `nil`).
-	 * - Returns: The related ``ListItem`` records.
-	 */
+	/// Fetches the ``FingerStringDB/ListItem`` records related to itself (`nextId`).
+	/// 
+	/// This fetches the related ``FingerStringDB/ListItem`` records using the
+	/// ``FingerStringDB/ListItem/nextId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let record         : ListItem = ...
+	/// let relatedRecords = try db.listItems.fetch(forNext: record)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``FingerStringDB/ListItem`` record.
+	///   - limit: An optional limit of records to fetch (defaults to `nil`).
+	/// - Returns: The related ``ListItem`` records.
 	@inlinable
 	func fetch(forNext record: FingerStringDB.ListItem, limit: Int? = nil)
 		throws -> [ FingerStringDB.ListItem ]
@@ -2316,22 +2226,20 @@ public extension SQLRecordFetchOperations
 	where T == FingerStringDB.TaskList, Ops: SQLDatabaseFetchOperations & SQLDatabaseAsyncOperations, Ops.RecordTypes == FingerStringDB.RecordTypes
 {
 	
-	/**
-	 * Fetch the ``FingerStringDB/TaskList`` record related to a ``FingerStringDB/ListItem`` (`listId`).
-	 * 
-	 * This fetches the related ``FingerStringDB/TaskList`` record using the
-	 * ``FingerStringDB/ListItem/listId`` property.
-	 * 
-	 * Example:
-	 * ```swift
-	 * let sourceRecord  : ListItem = ...
-	 * let relatedRecord = try await db.taskLists.find(for: sourceRecord)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - record: The ``ListItem`` record.
-	 * - Returns: The related ``FingerStringDB/TaskList`` record (throws if not found).
-	 */
+	/// Fetch the ``FingerStringDB/TaskList`` record related to a ``FingerStringDB/ListItem`` (`listId`).
+	/// 
+	/// This fetches the related ``FingerStringDB/TaskList`` record using the
+	/// ``FingerStringDB/ListItem/listId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let sourceRecord  : ListItem = ...
+	/// let relatedRecord = try await db.taskLists.find(for: sourceRecord)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``ListItem`` record.
+	/// - Returns: The related ``FingerStringDB/TaskList`` record (throws if not found).
 	@inlinable
 	func find(`for` record: FingerStringDB.ListItem)
 		async throws -> FingerStringDB.TaskList
@@ -2357,22 +2265,20 @@ public extension SQLRecordFetchOperations
 	where T == FingerStringDB.ListItem, Ops: SQLDatabaseFetchOperations & SQLDatabaseAsyncOperations, Ops.RecordTypes == FingerStringDB.RecordTypes
 {
 	
-	/**
-	 * Fetch the ``FingerStringDB/ListItem`` record related to itself (`parentId`).
-	 * 
-	 * This fetches the related ``FingerStringDB/ListItem`` record using the
-	 * ``FingerStringDB/ListItem/parentId`` property.
-	 * 
-	 * Example:
-	 * ```swift
-	 * let sourceRecord  : ListItem = ...
-	 * let relatedRecord = try await db.listItems.find(forParent: sourceRecord)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - record: The ``ListItem`` record.
-	 * - Returns: The related ``FingerStringDB/ListItem`` record, or `nil` if not found.
-	 */
+	/// Fetch the ``FingerStringDB/ListItem`` record related to itself (`parentId`).
+	/// 
+	/// This fetches the related ``FingerStringDB/ListItem`` record using the
+	/// ``FingerStringDB/ListItem/parentId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let sourceRecord  : ListItem = ...
+	/// let relatedRecord = try await db.listItems.find(forParent: sourceRecord)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``ListItem`` record.
+	/// - Returns: The related ``FingerStringDB/ListItem`` record, or `nil` if not found.
 	@inlinable
 	func find(forParent record: FingerStringDB.ListItem)
 		async throws -> FingerStringDB.ListItem?
@@ -2383,22 +2289,20 @@ public extension SQLRecordFetchOperations
 		)
 	}
 	
-	/**
-	 * Fetch the ``FingerStringDB/ListItem`` record related to itself (`nextId`).
-	 * 
-	 * This fetches the related ``FingerStringDB/ListItem`` record using the
-	 * ``FingerStringDB/ListItem/nextId`` property.
-	 * 
-	 * Example:
-	 * ```swift
-	 * let sourceRecord  : ListItem = ...
-	 * let relatedRecord = try await db.listItems.find(forNext: sourceRecord)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - record: The ``ListItem`` record.
-	 * - Returns: The related ``FingerStringDB/ListItem`` record, or `nil` if not found.
-	 */
+	/// Fetch the ``FingerStringDB/ListItem`` record related to itself (`nextId`).
+	/// 
+	/// This fetches the related ``FingerStringDB/ListItem`` record using the
+	/// ``FingerStringDB/ListItem/nextId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let sourceRecord  : ListItem = ...
+	/// let relatedRecord = try await db.listItems.find(forNext: sourceRecord)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``ListItem`` record.
+	/// - Returns: The related ``FingerStringDB/ListItem`` record, or `nil` if not found.
 	@inlinable
 	func find(forNext record: FingerStringDB.ListItem)
 		async throws -> FingerStringDB.ListItem?
@@ -2409,23 +2313,21 @@ public extension SQLRecordFetchOperations
 		)
 	}
 	
-	/**
-	 * Fetches the ``FingerStringDB/ListItem`` records related to a ``FingerStringDB/TaskList`` (`listId`).
-	 * 
-	 * This fetches the related ``FingerStringDB/TaskList`` records using the
-	 * ``FingerStringDB/ListItem/listId`` property.
-	 * 
-	 * Example:
-	 * ```swift
-	 * let record         : TaskList = ...
-	 * let relatedRecords = try await db.listItems.fetch(forList: record)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - record: The ``FingerStringDB/TaskList`` record.
-	 *   - limit: An optional limit of records to fetch (defaults to `nil`).
-	 * - Returns: The related ``TaskList`` records.
-	 */
+	/// Fetches the ``FingerStringDB/ListItem`` records related to a ``FingerStringDB/TaskList`` (`listId`).
+	/// 
+	/// This fetches the related ``FingerStringDB/TaskList`` records using the
+	/// ``FingerStringDB/ListItem/listId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let record         : TaskList = ...
+	/// let relatedRecords = try await db.listItems.fetch(forList: record)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``FingerStringDB/TaskList`` record.
+	///   - limit: An optional limit of records to fetch (defaults to `nil`).
+	/// - Returns: The related ``TaskList`` records.
 	@inlinable
 	func fetch(forList record: FingerStringDB.TaskList, limit: Int? = nil)
 		async throws -> [ FingerStringDB.ListItem ]
@@ -2433,23 +2335,21 @@ public extension SQLRecordFetchOperations
 		try await fetch(for: \.listId, in: record, limit: limit)
 	}
 	
-	/**
-	 * Fetches the ``FingerStringDB/ListItem`` records related to itself (`parentId`).
-	 * 
-	 * This fetches the related ``FingerStringDB/ListItem`` records using the
-	 * ``FingerStringDB/ListItem/parentId`` property.
-	 * 
-	 * Example:
-	 * ```swift
-	 * let record         : ListItem = ...
-	 * let relatedRecords = try await db.listItems.fetch(forParent: record)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - record: The ``FingerStringDB/ListItem`` record.
-	 *   - limit: An optional limit of records to fetch (defaults to `nil`).
-	 * - Returns: The related ``ListItem`` records.
-	 */
+	/// Fetches the ``FingerStringDB/ListItem`` records related to itself (`parentId`).
+	/// 
+	/// This fetches the related ``FingerStringDB/ListItem`` records using the
+	/// ``FingerStringDB/ListItem/parentId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let record         : ListItem = ...
+	/// let relatedRecords = try await db.listItems.fetch(forParent: record)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``FingerStringDB/ListItem`` record.
+	///   - limit: An optional limit of records to fetch (defaults to `nil`).
+	/// - Returns: The related ``ListItem`` records.
 	@inlinable
 	func fetch(forParent record: FingerStringDB.ListItem, limit: Int? = nil)
 		async throws -> [ FingerStringDB.ListItem ]
@@ -2457,23 +2357,21 @@ public extension SQLRecordFetchOperations
 		try await fetch(for: \.parentId, in: record, limit: limit)
 	}
 	
-	/**
-	 * Fetches the ``FingerStringDB/ListItem`` records related to itself (`nextId`).
-	 * 
-	 * This fetches the related ``FingerStringDB/ListItem`` records using the
-	 * ``FingerStringDB/ListItem/nextId`` property.
-	 * 
-	 * Example:
-	 * ```swift
-	 * let record         : ListItem = ...
-	 * let relatedRecords = try await db.listItems.fetch(forNext: record)
-	 * ```
-	 * 
-	 * - Parameters:
-	 *   - record: The ``FingerStringDB/ListItem`` record.
-	 *   - limit: An optional limit of records to fetch (defaults to `nil`).
-	 * - Returns: The related ``ListItem`` records.
-	 */
+	/// Fetches the ``FingerStringDB/ListItem`` records related to itself (`nextId`).
+	/// 
+	/// This fetches the related ``FingerStringDB/ListItem`` records using the
+	/// ``FingerStringDB/ListItem/nextId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let record         : ListItem = ...
+	/// let relatedRecords = try await db.listItems.fetch(forNext: record)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``FingerStringDB/ListItem`` record.
+	///   - limit: An optional limit of records to fetch (defaults to `nil`).
+	/// - Returns: The related ``ListItem`` records.
 	@inlinable
 	func fetch(forNext record: FingerStringDB.ListItem, limit: Int? = nil)
 		async throws -> [ FingerStringDB.ListItem ]

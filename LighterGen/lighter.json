@@ -3,7 +3,7 @@
 	"sqlExtensions": ["sql"],
 
 	"CodeStyle": {
-		"functionCommentStyle": "///",
+		"comments": "///",
 		"indent": "\t",
 		"lineLength": 80
 	},
