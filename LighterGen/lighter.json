@@ -1,1 +1,25 @@
-{}
+{
+	"databaseExtensions": ["sqlite3", "db", "sqlite"],
+	"sqlExtensions": ["sql"],
+
+	"CodeStyle": {
+		"functionCommentStyle": "///",
+		"indent": "\t",
+		"lineLength": 80
+	},
+	"EmbeddedLighter": {
+		"inserts": 6
+	},
+	"SwiftMapping": {
+		"databaseTypeName": "FingerStringDB",
+		"recordTypeNames": {
+			"singularize": true,
+			"capitalize": true,
+			"camelCase": true
+		}
+	},
+	"CodeGeneration": {
+		"generateAsyncFunctions": true,
+		"embedRecordTypesInDatabaseType": true
+	}
+}

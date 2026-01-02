@@ -8,33 +8,21 @@ struct FingerStringCLI: AsyncParsableCommand {
 		commandName: "fingerstring",
 		abstract: "A task list management tool",
 		subcommands: [
-			ListCommand.self,
-			ItemCommand.self,
+			ListCreate.self,
+			ListView.self,
+			ListDelete.self,
+			ListAll.self,
+			ItemAdd.self,
+			ItemDelete.self,
 		]
 	)
 }
 
 // MARK: - List Commands
 
-struct ListCommand: AsyncParsableCommand {
+struct ListCreate: AsyncParsableCommand {
 	static let configuration = CommandConfiguration(
-		commandName: "list",
-		abstract: "Manage task lists"
-	)
-
-	@Subcommand
-	var subcommand: Subcommand
-
-	enum Subcommand: AsyncParsableCommand {
-		case create(CreateList)
-		case view(ViewList)
-		case delete(DeleteList)
-		case all(ListAll)
-	}
-}
-
-struct CreateList: AsyncParsableCommand {
-	static let configuration = CommandConfiguration(
+		commandName: "list-create",
 		abstract: "Create a new list"
 	)
 
@@ -61,8 +49,9 @@ struct CreateList: AsyncParsableCommand {
 	}
 }
 
-struct ViewList: AsyncParsableCommand {
+struct ListView: AsyncParsableCommand {
 	static let configuration = CommandConfiguration(
+		commandName: "list-view",
 		abstract: "View a list and its items"
 	)
 
@@ -90,14 +79,13 @@ struct ViewList: AsyncParsableCommand {
 			print("   (empty)")
 		} else {
 			for item in items {
-				printItem(item, db: db, indent: "   ")
+				printItem(item, indent: "   ")
 			}
 		}
 	}
 
 	private func printItem(
 		_ item: ListItem,
-		db: FingerStringDatabase,
 		indent: String
 	) {
 		print("\(indent)• [\(item.itemID)] \(item.label)")
@@ -107,8 +95,9 @@ struct ViewList: AsyncParsableCommand {
 	}
 }
 
-struct DeleteList: AsyncParsableCommand {
+struct ListDelete: AsyncParsableCommand {
 	static let configuration = CommandConfiguration(
+		commandName: "list-delete",
 		abstract: "Delete a list"
 	)
 
@@ -136,7 +125,7 @@ struct DeleteList: AsyncParsableCommand {
 
 struct ListAll: AsyncParsableCommand {
 	static let configuration = CommandConfiguration(
-		commandName: "all",
+		commandName: "list-all",
 		abstract: "List all lists"
 	)
 
@@ -162,24 +151,9 @@ struct ListAll: AsyncParsableCommand {
 
 // MARK: - Item Commands
 
-struct ItemCommand: AsyncParsableCommand {
+struct ItemAdd: AsyncParsableCommand {
 	static let configuration = CommandConfiguration(
-		commandName: "item",
-		abstract: "Manage list items"
-	)
-
-	@Subcommand
-	var subcommand: Subcommand
-
-	enum Subcommand: AsyncParsableCommand {
-		case add(AddItem)
-		case delete(DeleteItem)
-		case move(MoveItem)
-	}
-}
-
-struct AddItem: AsyncParsableCommand {
-	static let configuration = CommandConfiguration(
+		commandName: "item-add",
 		abstract: "Add an item to a list"
 	)
 
@@ -206,8 +180,9 @@ struct AddItem: AsyncParsableCommand {
 	}
 }
 
-struct DeleteItem: AsyncParsableCommand {
+struct ItemDelete: AsyncParsableCommand {
 	static let configuration = CommandConfiguration(
+		commandName: "item-delete",
 		abstract: "Delete an item"
 	)
 
@@ -230,23 +205,5 @@ struct DeleteItem: AsyncParsableCommand {
 		let db = try await FingerStringDatabase.create()
 		try await db.deleteItem(id: itemID)
 		print("Deleted item")
-	}
-}
-
-struct MoveItem: AsyncParsableCommand {
-	static let configuration = CommandConfiguration(
-		abstract: "Move an item to a new position"
-	)
-
-	@Argument(help: "ID of the item to move")
-	var itemID: Int64
-
-	@Option(help: "Move before this item ID (omit to move to end)")
-	var before: Int64?
-
-	func run() async throws {
-		let db = try await FingerStringDatabase.create()
-		try await db.moveItem(id: itemID, beforeID: before)
-		print("Moved item")
 	}
 }
