@@ -150,6 +150,10 @@ public struct ListController: Sendable {
 		return tasks
 	}
 
+	public func getTask(hashID: String) async throws -> TaskItem? {
+		try await db.taskItems.find(by: \.itemId, hashID.lowercased())
+	}
+
 	public func getTask(id: TaskItem.ID) async throws -> TaskItem? {
 		try await db.taskItems.find(id)
 	}
@@ -196,7 +200,8 @@ public struct ListController: Sendable {
 	public func updateTask(
 		id: TaskItem.ID,
 		label: Change<String> = .unchanged,
-		note: Change<String?> = .unchanged
+		note: Change<String?> = .unchanged,
+		isCompleted: Change<Bool> = .unchanged
 	) async throws -> TaskItem {
 		var task = try await getTask(id: id).unwrap(orThrow: ReadError.doesntExist)
 
@@ -206,6 +211,10 @@ public struct ListController: Sendable {
 
 		if case .change(let newValue) = label {
 			task.label = newValue
+		}
+
+		if case .change(let newValue) = isCompleted {
+			task.isComplete = newValue
 		}
 
 		try await db.update(task)
