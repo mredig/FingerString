@@ -43,7 +43,7 @@ struct ItemCompleteToggle: AsyncParsableCommand {
 
 		let completionSlug = updated.isComplete ? "completed" : "incomplete"
 
-		print("Marked task [\(updated.itemId)] (\(updated.label.prefix(15))) as \(completionSlug)")
+		print("Marked task [\(updated.itemHashId)] (\(updated.label.prefix(15))) as \(completionSlug)")
 //		guard
 //			let list = try await controller.getList(withSlug: listSlug)
 //		else {

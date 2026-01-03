@@ -67,11 +67,11 @@ public struct ListController: Sendable {
 			let inputComposite = label + "\(previousValue, default: "")"
 			let hash = Insecure.MD5.hash(data: Data(inputComposite.utf8))
 			previousValue = hash.toHexString()
-			let itemID = String(hash.toHexString().prefix(5))
+			let itemHashID = String(hash.toHexString().prefix(5))
 			let create = TaskItem(
 				listId: listID,
-				parentId: lastItemOnList?.id,
-				itemId: itemID,
+				prevId: lastItemOnList?.id,
+				itemHashId: itemHashID,
 				isComplete: false,
 				label: label,
 				note: note)
@@ -151,7 +151,7 @@ public struct ListController: Sendable {
 	}
 
 	public func getTask(hashID: String) async throws -> TaskItem? {
-		try await db.taskItems.find(by: \.itemId, hashID.lowercased())
+		try await db.taskItems.find(by: \.itemHashId, hashID.lowercased())
 	}
 
 	public func getTask(id: TaskItem.ID) async throws -> TaskItem? {
@@ -246,8 +246,8 @@ public struct ListController: Sendable {
 			let task = try await getTask(id: id)
 		else { return }
 		async let previousTaskLoad: TaskItem? = {
-			guard let parentId = task.parentId else { return nil }
-			return try await getTask(id: parentId)
+			guard let prevId = task.prevId else { return nil }
+			return try await getTask(id: prevId)
 		}()
 		async let nextTaskLoad: TaskItem? = {
 			guard let nextId = task.nextId else { return nil }
@@ -270,13 +270,13 @@ public struct ListController: Sendable {
 		switch (previousTask, nextTask) {
 		case (.some(var previous), .some(var next)):
 			previous.nextId = next.id
-			next.parentId = previous.id
+			next.prevId = previous.id
 			updates = [previous, next]
 		case (nil, nil):
 			try await updateRootTask(nil, on: list.id)
 		case (nil, .some(var next)):
 			try await updateRootTask(next.id, on: list.id)
-			next.parentId = nil
+			next.prevId = nil
 			updates = [next]
 		case (.some(var previous), nil):
 			previous.nextId = nil

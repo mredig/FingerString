@@ -54,7 +54,7 @@ struct ListView: AsyncParsableCommand {
 
 		let lineBuilder = [
 			["[", item.isComplete ? "x" : " ", "]"].joined(),
-			"[\(item.itemId)]",
+			"[\(item.itemHashId)]",
 			"\(item.label)",
 			item.note != nil ? "(*)" : nil
 		]

@@ -28,6 +28,6 @@ struct ItemAdd: AsyncParsableCommand {
 		}
 
 		let task = try await controller.createTask(label: label, note: note, on: list.id)
-		print("Added item: [\(task.itemId)] \(task.label)")
+		print("Added item: [\(task.itemHashId)] \(task.label)")
 	}
 }
