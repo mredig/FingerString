@@ -38,9 +38,9 @@ struct ListCreate: AsyncParsableCommand {
 	var description: String?
 
 	func run() async throws {
-		let list = try await FingerStringCLI.controller.createList(with: slug, friendlyTitle: title, description: description)
-		print("Created list '\(list.slug)'")
-		if let title = list.title {
+		let newList = try await FingerStringCLI.controller.createList(with: slug, friendlyTitle: title, description: description)
+		print("Created list '\(newList.slug)'")
+		if let title = newList.title {
 			print("  Title: \(title)")
 		}
 	}

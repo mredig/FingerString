@@ -5,29 +5,48 @@ import Crypto
 #endif
 import Foundation
 import SwiftPizzaSnips
+import SQLite3
 
-public struct ListController: Sendable {
-	private static let defaultDBURL = URL
+public enum Constants {
+	public static let defaultDBURL = URL
 		.homeDirectory
 		.appending(path: ".config")
 		.appending(path: "FingerString")
 		.appending(path: "FingerString")
 		.appendingPathExtension("db")
+}
+
+public struct ListController: Sendable {
 
 	public static let defaultDB: FingerStringDB = {
-		FingerStringDB(url: defaultDBURL)
+		FingerStringDB(url: Constants.defaultDBURL)
 	}()
 
 	let db: FingerStringDB
 
 	public init(db: FingerStringDB) {
 		try? FileManager.default.createDirectory(
-			at: Self.defaultDBURL.deletingLastPathComponent(),
+			at: Constants.defaultDBURL.deletingLastPathComponent(),
 			withIntermediateDirectories: true)
 
-//		db.connectionHandler.
+		if Constants.defaultDBURL.checkResourceIsAccessible() == false {
+			try? Self.createDB()
+		}
 
 		self.db = db
+	}
+
+	public static func createDB(at location: URL = Constants.defaultDBURL) throws(DBError) {
+		var path = location.path(percentEncoded: false).cString(using: .utf8) ?? []
+		var pointer: OpaquePointer?// = -1
+		let rc = sqlite3_create_fingerstringdb(
+			&path,
+			Int32(SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE),
+			&pointer)
+
+		guard rc == SQLITE_OK else {
+			throw DBError.cannotCreateDB
+		}
 	}
 
 	// MARK: - Create
@@ -254,5 +273,9 @@ public struct ListController: Sendable {
 
 	public enum ReadError: Error {
 		case doesntExist
+	}
+
+	public enum DBError: Error {
+		case cannotCreateDB
 	}
 }
