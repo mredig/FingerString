@@ -1,4 +1,4 @@
-// Autocreated by sqlite2swift at 2026-01-02T23:58:49Z
+// Autocreated by sqlite2swift at 2026-01-03T01:43:07Z
 
 import SQLite3
 import Foundation
@@ -1251,6 +1251,7 @@ public struct TaskList : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
 /// 	parent_id INTEGER,
 /// 	next_id INTEGER,
 /// 	item_id TEXT UNIQUE NOT NULL,
+/// 	is_complete BOOL NOT NULL,
 /// 	label TEXT NOT NULL,
 /// 	note TEXT,
 /// 	FOREIGN KEY(list_id) REFERENCES task_list(id),
@@ -1278,6 +1279,9 @@ public struct TaskItem : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
 	/// Column `item_id` (`TEXT`), required.
 	public var itemId : String
 	
+	/// Column `is_complete` (`BOOLEAN`), required.
+	public var isComplete : Bool
+	
 	/// Column `label` (`TEXT`), required.
 	public var label : String
 	
@@ -1292,15 +1296,17 @@ public struct TaskItem : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
 	///   - parentId: Column `parent_id` (`INTEGER`), optional (default: `nil`).
 	///   - nextId: Column `next_id` (`INTEGER`), optional (default: `nil`).
 	///   - itemId: Column `item_id` (`TEXT`), required.
+	///   - isComplete: Column `is_complete` (`BOOLEAN`), required.
 	///   - label: Column `label` (`TEXT`), required.
 	///   - note: Column `note` (`TEXT`), optional (default: `nil`).
 	@inlinable
 	public init(
 		id: Int = Int.min,
 		listId: Int,
-		parentId: Int?,
+		parentId: Int? = nil,
 		nextId: Int? = nil,
 		itemId: String,
+		isComplete: Bool,
 		label: String,
 		note: String? = nil
 	)
@@ -1310,6 +1316,7 @@ public struct TaskItem : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
 		self.parentId = parentId
 		self.nextId = nextId
 		self.itemId = itemId
+		self.isComplete = isComplete
 		self.label = label
 		self.note = note
 	}
@@ -1665,7 +1672,7 @@ public extension TaskItem {
 	/// It is used for static type lookups and more.
 	struct Schema : SQLKeyedTableSchema, SQLSwiftMatchableSchema, SQLCreatableSchema {
 		
-		public typealias PropertyIndices = ( idx_id: Int32, idx_listId: Int32, idx_parentId: Int32, idx_nextId: Int32, idx_itemId: Int32, idx_label: Int32, idx_note: Int32 )
+		public typealias PropertyIndices = ( idx_id: Int32, idx_listId: Int32, idx_parentId: Int32, idx_nextId: Int32, idx_itemId: Int32, idx_isComplete: Int32, idx_label: Int32, idx_note: Int32 )
 		public typealias RecordType = TaskItem
 		public typealias MatchClosureType = ( TaskItem ) -> Bool
 		
@@ -1673,7 +1680,7 @@ public extension TaskItem {
 		public static let externalName = "task_item"
 		
 		/// The number of columns the `task_item` table has.
-		public static let columnCount : Int32 = 7
+		public static let columnCount : Int32 = 8
 		
 		/// Information on the records primary key (``TaskItem/id``).
 		public static let primaryKeyColumn = MappedColumn<TaskItem, Int>(
@@ -1691,6 +1698,7 @@ public extension TaskItem {
 				parent_id INTEGER,
 				next_id INTEGER,
 				item_id TEXT UNIQUE NOT NULL,
+				is_complete BOOL NOT NULL,
 				label TEXT NOT NULL,
 				note TEXT,
 				FOREIGN KEY(list_id) REFERENCES task_list(id),
@@ -1700,37 +1708,37 @@ public extension TaskItem {
 			"""#
 		
 		/// SQL to `SELECT` all columns of the `task_item` table.
-		public static let select = #"SELECT "id", "list_id", "parent_id", "next_id", "item_id", "label", "note" FROM "task_item""#
+		public static let select = #"SELECT "id", "list_id", "parent_id", "next_id", "item_id", "is_complete", "label", "note" FROM "task_item""#
 		
 		/// SQL fragment representing all columns.
-		public static let selectColumns = #""id", "list_id", "parent_id", "next_id", "item_id", "label", "note""#
+		public static let selectColumns = #""id", "list_id", "parent_id", "next_id", "item_id", "is_complete", "label", "note""#
 		
 		/// Index positions of the properties in ``selectColumns``.
-		public static let selectColumnIndices : PropertyIndices = ( 0, 1, 2, 3, 4, 5, 6 )
+		public static let selectColumnIndices : PropertyIndices = ( 0, 1, 2, 3, 4, 5, 6, 7 )
 		
 		/// SQL to `SELECT` all columns of the `task_item` table using a Swift filter.
-		public static let matchSelect = #"SELECT "id", "list_id", "parent_id", "next_id", "item_id", "label", "note" FROM "task_item" WHERE taskItems_swift_match("id", "list_id", "parent_id", "next_id", "item_id", "label", "note") != 0"#
+		public static let matchSelect = #"SELECT "id", "list_id", "parent_id", "next_id", "item_id", "is_complete", "label", "note" FROM "task_item" WHERE taskItems_swift_match("id", "list_id", "parent_id", "next_id", "item_id", "is_complete", "label", "note") != 0"#
 		
 		/// SQL to `UPDATE` all columns of the `task_item` table.
-		public static let update = #"UPDATE "task_item" SET "list_id" = ?, "parent_id" = ?, "next_id" = ?, "item_id" = ?, "label" = ?, "note" = ? WHERE "id" = ?"#
+		public static let update = #"UPDATE "task_item" SET "list_id" = ?, "parent_id" = ?, "next_id" = ?, "item_id" = ?, "is_complete" = ?, "label" = ?, "note" = ? WHERE "id" = ?"#
 		
 		/// Property parameter indicies in the ``update`` SQL
-		public static let updateParameterIndices : PropertyIndices = ( 7, 1, 2, 3, 4, 5, 6 )
+		public static let updateParameterIndices : PropertyIndices = ( 8, 1, 2, 3, 4, 5, 6, 7 )
 		
 		/// SQL to `INSERT` a record into the `task_item` table.
-		public static let insert = #"INSERT INTO "task_item" ( "list_id", "parent_id", "next_id", "item_id", "label", "note" ) VALUES ( ?, ?, ?, ?, ?, ? )"#
+		public static let insert = #"INSERT INTO "task_item" ( "list_id", "parent_id", "next_id", "item_id", "is_complete", "label", "note" ) VALUES ( ?, ?, ?, ?, ?, ?, ? )"#
 		
 		/// SQL to `INSERT` a record into the `task_item` table.
-		public static let insertReturning = #"INSERT INTO "task_item" ( "list_id", "parent_id", "next_id", "item_id", "label", "note" ) VALUES ( ?, ?, ?, ?, ?, ? ) RETURNING "id", "list_id", "parent_id", "next_id", "item_id", "label", "note""#
+		public static let insertReturning = #"INSERT INTO "task_item" ( "list_id", "parent_id", "next_id", "item_id", "is_complete", "label", "note" ) VALUES ( ?, ?, ?, ?, ?, ?, ? ) RETURNING "id", "list_id", "parent_id", "next_id", "item_id", "is_complete", "label", "note""#
 		
 		/// Property parameter indicies in the ``insert`` SQL
-		public static let insertParameterIndices : PropertyIndices = ( -1, 1, 2, 3, 4, 5, 6 )
+		public static let insertParameterIndices : PropertyIndices = ( -1, 1, 2, 3, 4, 5, 6, 7 )
 		
 		/// SQL to `DELETE` a record from the `task_item` table.
 		public static let delete = #"DELETE FROM "task_item" WHERE "id" = ?"#
 		
 		/// Property parameter indicies in the ``delete`` SQL
-		public static let deleteParameterIndices : PropertyIndices = ( 1, -1, -1, -1, -1, -1, -1 )
+		public static let deleteParameterIndices : PropertyIndices = ( 1, -1, -1, -1, -1, -1, -1, -1 )
 		
 		/// Lookup property indices by column name in a statement handle.
 		/// 
@@ -1749,7 +1757,7 @@ public extension TaskItem {
 		public static func lookupColumnIndices(`in` statement: OpaquePointer!)
 			-> PropertyIndices
 		{
-			var indices : PropertyIndices = ( -1, -1, -1, -1, -1, -1, -1 )
+			var indices : PropertyIndices = ( -1, -1, -1, -1, -1, -1, -1, -1 )
 			for i in 0..<sqlite3_column_count(statement) {
 				let col = sqlite3_column_name(statement, i)
 				if strcmp(col!, "id") == 0 {
@@ -1766,6 +1774,9 @@ public extension TaskItem {
 				}
 				else if strcmp(col!, "item_id") == 0 {
 					indices.idx_itemId = i
+				}
+				else if strcmp(col!, "is_complete") == 0 {
+					indices.idx_isComplete = i
 				}
 				else if strcmp(col!, "label") == 0 {
 					indices.idx_label = i
@@ -1810,6 +1821,7 @@ public extension TaskItem {
 						parentId: (indices.idx_parentId >= 0) && (indices.idx_parentId < argc) ? (sqlite3_value_type(argv[Int(indices.idx_parentId)]) != SQLITE_NULL ? Int(sqlite3_value_int64(argv[Int(indices.idx_parentId)])) : nil) : RecordType.schema.parentId.defaultValue,
 						nextId: (indices.idx_nextId >= 0) && (indices.idx_nextId < argc) ? (sqlite3_value_type(argv[Int(indices.idx_nextId)]) != SQLITE_NULL ? Int(sqlite3_value_int64(argv[Int(indices.idx_nextId)])) : nil) : RecordType.schema.nextId.defaultValue,
 						itemId: ((indices.idx_itemId >= 0) && (indices.idx_itemId < argc) ? (sqlite3_value_text(argv[Int(indices.idx_itemId)]).flatMap(String.init(cString:))) : nil) ?? RecordType.schema.itemId.defaultValue,
+						isComplete: (indices.idx_isComplete >= 0) && (indices.idx_isComplete < argc) && (sqlite3_value_type(argv[Int(indices.idx_isComplete)]) != SQLITE_NULL) ? (sqlite3_value_int64(argv[Int(indices.idx_isComplete)]) != 0) : RecordType.schema.isComplete.defaultValue,
 						label: ((indices.idx_label >= 0) && (indices.idx_label < argc) ? (sqlite3_value_text(argv[Int(indices.idx_label)]).flatMap(String.init(cString:))) : nil) ?? RecordType.schema.label.defaultValue,
 						note: (indices.idx_note >= 0) && (indices.idx_note < argc) ? (sqlite3_value_text(argv[Int(indices.idx_note)]).flatMap(String.init(cString:))) : RecordType.schema.note.defaultValue
 					)
@@ -1897,6 +1909,13 @@ public extension TaskItem {
 			keyPath: \TaskItem.itemId
 		)
 		
+		/// Type information for property ``TaskItem/isComplete`` (`is_complete` column).
+		public let isComplete = MappedColumn<TaskItem, Bool>(
+			externalName: "is_complete",
+			defaultValue: false,
+			keyPath: \TaskItem.isComplete
+		)
+		
 		/// Type information for property ``TaskItem/label`` (`label` column).
 		public let label = MappedColumn<TaskItem, String>(
 			externalName: "label",
@@ -1912,7 +1931,7 @@ public extension TaskItem {
 		)
 		
 		#if swift(>=5.7)
-		public var _allColumns : [ any SQLColumn ] { [ id, listId, parentId, nextId, itemId, label, note ] }
+		public var _allColumns : [ any SQLColumn ] { [ id, listId, parentId, nextId, itemId, isComplete, label, note ] }
 		#endif // swift(>=5.7)
 		
 		public init()
@@ -1961,6 +1980,7 @@ public extension TaskItem {
 			parentId: (indices.idx_parentId >= 0) && (indices.idx_parentId < argc) ? (sqlite3_column_type(statement, indices.idx_parentId) != SQLITE_NULL ? Int(sqlite3_column_int64(statement, indices.idx_parentId)) : nil) : Self.schema.parentId.defaultValue,
 			nextId: (indices.idx_nextId >= 0) && (indices.idx_nextId < argc) ? (sqlite3_column_type(statement, indices.idx_nextId) != SQLITE_NULL ? Int(sqlite3_column_int64(statement, indices.idx_nextId)) : nil) : Self.schema.nextId.defaultValue,
 			itemId: ((indices.idx_itemId >= 0) && (indices.idx_itemId < argc) ? (sqlite3_column_text(statement, indices.idx_itemId).flatMap(String.init(cString:))) : nil) ?? Self.schema.itemId.defaultValue,
+			isComplete: (indices.idx_isComplete >= 0) && (indices.idx_isComplete < argc) && (sqlite3_column_type(statement, indices.idx_isComplete) != SQLITE_NULL) ? (sqlite3_column_int64(statement, indices.idx_isComplete) != 0) : Self.schema.isComplete.defaultValue,
 			label: ((indices.idx_label >= 0) && (indices.idx_label < argc) ? (sqlite3_column_text(statement, indices.idx_label).flatMap(String.init(cString:))) : nil) ?? Self.schema.label.defaultValue,
 			note: (indices.idx_note >= 0) && (indices.idx_note < argc) ? (sqlite3_column_text(statement, indices.idx_note).flatMap(String.init(cString:))) : Self.schema.note.defaultValue
 		)
@@ -1975,12 +1995,12 @@ public extension TaskItem {
 	/// var statement : OpaquePointer?
 	/// sqlite3_prepare_v2(
 	///   dbHandle,
-	///   #"UPDATE "task_item" SET "list_id" = ?, "parent_id" = ?, "next_id" = ?, "item_id" = ?, "label" = ?, "note" = ? WHERE "id" = ?"#,
+	///   #"UPDATE "task_item" SET "list_id" = ?, "parent_id" = ?, "next_id" = ?, "item_id" = ?, "is_complete" = ?, "label" = ?, "note" = ? WHERE "id" = ?"#,
 	///   -1, &statement, nil
 	/// )
 	/// 
-	/// let record = TaskItem(id: 1, listId: 2, parentId: 3, nextId: 4, itemId: "Hello", label: "World", note: "Duck")
-	/// let ok = record.bind(to: statement, indices: ( 7, 1, 2, 3, 4, 5, 6 )) {
+	/// let record = TaskItem(id: 1, listId: 2, parentId: 3, nextId: 4, itemId: "Hello", isComplete: ..., label: "World", note: "Duck")
+	/// let ok = record.bind(to: statement, indices: ( 8, 1, 2, 3, 4, 5, 6, 7 )) {
 	///   sqlite3_step(statement) == SQLITE_DONE
 	/// }
 	/// sqlite3_finalize(statement)
@@ -2024,6 +2044,9 @@ public extension TaskItem {
 		return try itemId.withCString() { ( s ) in
 			if indices.idx_itemId >= 0 {
 				sqlite3_bind_text(statement, indices.idx_itemId, s, -1, nil)
+			}
+			if indices.idx_isComplete >= 0 {
+				sqlite3_bind_int64(statement, indices.idx_isComplete, isComplete ? 1 : 0)
 			}
 			return try label.withCString() { ( s ) in
 				if indices.idx_label >= 0 {

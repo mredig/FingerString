@@ -46,11 +46,15 @@ struct ListView: AsyncParsableCommand {
 		indent: String = ""
 	) {
 		let lineBuilder = [
-			indent,
-			"• [\(item.itemId)] \(item.label)",
-			item.note != nil ? " (*)" : ""
+			["[", item.isComplete ? "x" : " ", "]"].joined(),
+			"[\(item.itemId)]",
+			"\(item.label)",
+			item.note != nil ? "(*)" : nil
 		]
 
-		print(lineBuilder.joined())
+		let line = indent + lineBuilder
+			.compactMap(\.self)
+			.joined(separator: " ")
+		print(line)
 	}
 }

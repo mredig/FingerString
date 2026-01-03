@@ -72,6 +72,7 @@ public struct ListController: Sendable {
 				listId: listID,
 				parentId: lastItemOnList?.id,
 				itemId: itemID,
+				isComplete: false,
 				label: label,
 				note: note)
 
@@ -81,6 +82,11 @@ public struct ListController: Sendable {
 			} catch {
 				print("Duplicate id, trying again")
 				continue
+			}
+
+			if var lastItemOnList {
+				lastItemOnList.nextId = new.id
+				try await db.update(lastItemOnList)
 			}
 
 			if list.firstTaskId == nil {

@@ -12,6 +12,7 @@ CREATE TABLE task_item (
 	parent_id INTEGER,
 	next_id INTEGER,
 	item_id TEXT UNIQUE NOT NULL,
+	is_complete BOOL NOT NULL,
 	label TEXT NOT NULL,
 	note TEXT,
 	FOREIGN KEY(list_id) REFERENCES task_list(id),
