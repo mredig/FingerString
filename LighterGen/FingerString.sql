@@ -1,3 +1,5 @@
+PRAGMA journal_mode = WAL;
+
 CREATE TABLE task_list (
 	id INTEGER PRIMARY KEY NOT NULL,
 	slug TEXT UNIQUE NOT NULL,
