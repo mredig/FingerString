@@ -1,9 +1,11 @@
 import ArgumentParser
-import FingerString
+import FingerStringLib
 import Foundation
 
 @main
 struct FingerStringCLI: AsyncParsableCommand {
+	static let controller = ListController(db: ListController.defaultDB)
+
 	static let configuration = CommandConfiguration(
 		commandName: "fingerstring",
 		abstract: "A task list management tool",
@@ -36,12 +38,7 @@ struct ListCreate: AsyncParsableCommand {
 	var description: String?
 
 	func run() async throws {
-		let db = try await FingerStringDatabase.create()
-		let list = try await db.createList(
-			slug: slug,
-			title: title,
-			description: description
-		)
+		let list = try await FingerStringCLI.controller.createList(with: slug, friendlyTitle: title, description: description)
 		print("Created list '\(list.slug)'")
 		if let title = list.title {
 			print("  Title: \(title)")
@@ -59,39 +56,39 @@ struct ListView: AsyncParsableCommand {
 	var slug: String
 
 	func run() async throws {
-		let db = try await FingerStringDatabase.create()
-		guard let list = try await db.getList(slug: slug) else {
-			print("List not found: \(slug)")
-			return
-		}
-
-		print("📋 \(list.slug)")
-		if let title = list.title {
-			print("   \(title)")
-		}
-		if let description = list.description {
-			print("   \(description)")
-		}
-		print()
-
-		let items = try await db.getItems(listSlug: slug)
-		if items.isEmpty {
-			print("   (empty)")
-		} else {
-			for item in items {
-				printItem(item, indent: "   ")
-			}
-		}
+//		let db = try await FingerStringDatabase.create()
+//		guard let list = try await db.getList(slug: slug) else {
+//			print("List not found: \(slug)")
+//			return
+//		}
+//
+//		print("📋 \(list.slug)")
+//		if let title = list.title {
+//			print("   \(title)")
+//		}
+//		if let description = list.description {
+//			print("   \(description)")
+//		}
+//		print()
+//
+//		let items = try await db.getItems(listSlug: slug)
+//		if items.isEmpty {
+//			print("   (empty)")
+//		} else {
+//			for item in items {
+//				printItem(item, indent: "   ")
+//			}
+//		}
 	}
 
 	private func printItem(
-		_ item: ListItem,
+		_ item: TaskItem,
 		indent: String
 	) {
-		print("\(indent)• [\(item.itemID)] \(item.label)")
-		if let note = item.note {
-			print("\(indent)  \(note)")
-		}
+//		print("\(indent)• [\(item.itemID)] \(item.label)")
+//		if let note = item.note {
+//			print("\(indent)  \(note)")
+//		}
 	}
 }
 
@@ -108,18 +105,18 @@ struct ListDelete: AsyncParsableCommand {
 	var force: Bool = false
 
 	func run() async throws {
-		if !force {
-			print("Delete list '\(slug)'? (yes/no)")
-			guard let input = readLine(),
-				  input.lowercased() == "yes" else {
-				print("Cancelled")
-				return
-			}
-		}
-
-		let db = try await FingerStringDatabase.create()
-		try await db.deleteList(slug: slug)
-		print("Deleted list '\(slug)'")
+//		if !force {
+//			print("Delete list '\(slug)'? (yes/no)")
+//			guard let input = readLine(),
+//				  input.lowercased() == "yes" else {
+//				print("Cancelled")
+//				return
+//			}
+//		}
+//
+//		let db = try await FingerStringDatabase.create()
+//		try await db.deleteList(slug: slug)
+//		print("Deleted list '\(slug)'")
 	}
 }
 
@@ -130,22 +127,22 @@ struct ListAll: AsyncParsableCommand {
 	)
 
 	func run() async throws {
-		let db = try await FingerStringDatabase.create()
-		let lists = try await db.getAllLists()
-
-		if lists.isEmpty {
-			print("No lists found")
-			return
-		}
-
-		print("📚 Task Lists:")
-		for list in lists {
-			print("  • \(list.slug)", terminator: "")
-			if let title = list.title {
-				print(" - \(title)", terminator: "")
-			}
-			print()
-		}
+//		let db = try await FingerStringDatabase.create()
+//		let lists = try await db.getAllLists()
+//
+//		if lists.isEmpty {
+//			print("No lists found")
+//			return
+//		}
+//
+//		print("📚 Task Lists:")
+//		for list in lists {
+//			print("  • \(list.slug)", terminator: "")
+//			if let title = list.title {
+//				print(" - \(title)", terminator: "")
+//			}
+//			print()
+//		}
 	}
 }
 
@@ -170,13 +167,13 @@ struct ItemAdd: AsyncParsableCommand {
 	var parent: String?
 
 	func run() async throws {
-		let db = try await FingerStringDatabase.create()
-		let item = try await db.addItem(
-			to: listSlug,
-			label: label,
-			note: note
-		)
-		print("Added item: [\(item.itemID)] \(item.label)")
+//		let db = try await FingerStringDatabase.create()
+//		let item = try await db.addItem(
+//			to: listSlug,
+//			label: label,
+//			note: note
+//		)
+//		print("Added item: [\(item.itemID)] \(item.label)")
 	}
 }
 
@@ -193,17 +190,17 @@ struct ItemDelete: AsyncParsableCommand {
 	var force: Bool = false
 
 	func run() async throws {
-		if !force {
-			print("Delete item? (yes/no)")
-			guard let input = readLine(),
-				  input.lowercased() == "yes" else {
-				print("Cancelled")
-				return
-			}
-		}
-
-		let db = try await FingerStringDatabase.create()
-		try await db.deleteItem(id: itemID)
-		print("Deleted item")
+//		if !force {
+//			print("Delete item? (yes/no)")
+//			guard let input = readLine(),
+//				  input.lowercased() == "yes" else {
+//				print("Cancelled")
+//				return
+//			}
+//		}
+//
+//		let db = try await FingerStringDatabase.create()
+//		try await db.deleteItem(id: itemID)
+//		print("Deleted item")
 	}
 }

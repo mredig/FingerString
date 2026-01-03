@@ -1298,7 +1298,7 @@ public struct TaskItem : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
 	public init(
 		id: Int = Int.min,
 		listId: Int,
-		parentId: Int? = nil,
+		parentId: Int?,
 		nextId: Int? = nil,
 		itemId: String,
 		label: String,

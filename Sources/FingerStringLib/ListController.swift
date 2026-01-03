@@ -1,0 +1,258 @@
+#if canImport(CryptoKit)
+import CryptoKit
+#else
+import Crypto
+#endif
+import Foundation
+import SwiftPizzaSnips
+
+public struct ListController: Sendable {
+	private static let defaultDBURL = URL
+		.homeDirectory
+		.appending(path: ".config")
+		.appending(path: "FingerString")
+		.appending(path: "FingerString")
+		.appendingPathExtension("db")
+
+	public static let defaultDB: FingerStringDB = {
+		FingerStringDB(url: defaultDBURL)
+	}()
+
+	let db: FingerStringDB
+
+	public init(db: FingerStringDB) {
+		try? FileManager.default.createDirectory(
+			at: Self.defaultDBURL.deletingLastPathComponent(),
+			withIntermediateDirectories: true)
+
+//		db.connectionHandler.
+
+		self.db = db
+	}
+
+	// MARK: - Create
+	public func createList(with slug: String, friendlyTitle: String?, description: String?) async throws -> TaskList {
+		let create = TaskList(slug: slug.lowercased())
+		let new = try await db.insert(create)
+		return new
+	}
+
+	public func createTask(label: String, on listID: TaskList.ID) async throws -> TaskItem {
+		let lastItemOnList = try await getLastTask(on: listID)
+
+		var previousValue: String?
+		while true {
+			let inputComposite = label + "\(previousValue, default: "")"
+			let hash = Insecure.MD5.hash(data: Data(inputComposite.utf8))
+			previousValue = hash.toHexString()
+			let itemID = String(hash.toHexString().prefix(5))
+			let create = TaskItem(listId: listID, parentId: lastItemOnList?.id, itemId: itemID, label: label)
+
+			do {
+				let new = try await db.insert(create)
+				return new
+			} catch {
+				print("Duplicate id, trying again")
+			}
+		}
+	}
+
+	// MARK: - Read
+	public func getAllLists() async throws -> [TaskList] {
+		try await db.taskLists.fetch()
+	}
+
+	public func getList(id: TaskList.ID) async throws -> TaskList? {
+		try await db.taskLists.find(id)
+	}
+
+	public func getList(withSlug slug: String) async throws -> TaskList? {
+		try await db.taskLists.find(by: \.slug, slug)
+	}
+
+	public func getAllTasksStream(on listID: TaskList.ID) async throws -> AsyncThrowingStream<TaskItem, Error> {
+		let list = try await getList(id: listID)
+		let (stream, continuation) = AsyncThrowingStream.makeStream(of: TaskItem.self)
+
+		Task {
+			var taskID = list?.firstTaskId
+
+			while let currentTaskID = taskID {
+				do {
+					guard
+						let task = try await getTask(id: currentTaskID)
+					else { throw ReadError.doesntExist }
+					continuation.yield(task)
+					taskID = task.nextId
+				} catch {
+					taskID = nil
+					continuation.finish(throwing: error)
+				}
+			}
+		}
+
+		return stream
+	}
+
+	public func getAllTasks(on listID: TaskList.ID) async throws -> [TaskItem] {
+		var tasks: [TaskItem] = []
+
+		let stream = try await getAllTasksStream(on: listID)
+
+		for try await task in stream {
+			tasks.append(task)
+		}
+
+		return tasks
+	}
+
+	public func getTask(id: TaskItem.ID) async throws -> TaskItem? {
+		try await db.taskItems.find(id)
+	}
+
+	public func getTask(index: Int, on listID: TaskList.ID) async throws -> TaskItem? {
+		guard index >= 0 else { return nil }
+
+		let stream = try await getAllTasksStream(on: listID)
+
+		var currentIndex = 0
+		// note the stream is known to continue firing after finding a match. this is a future fix
+		for try await taskItem in stream {
+			defer { currentIndex += 1 }
+			guard currentIndex == index else { continue }
+			return taskItem
+		}
+
+		return nil
+	}
+
+	public func getLastTask(on listID: TaskList.ID) async throws -> TaskItem? {
+		guard
+			let list = try await getList(id: listID)
+		else { return nil }
+
+		var itemID = list.firstTaskId
+
+		var task: TaskItem?
+		while let currentItemID = itemID {
+			task = try await getTask(id: currentItemID)
+			itemID = task?.nextId
+		}
+
+		return task
+	}
+
+	// MARK: - Update
+	public enum Change<T> {
+		case unchanged
+		case change(T)
+	}
+
+	@discardableResult
+	public func updateTask(
+		id: TaskItem.ID,
+		label: Change<String> = .unchanged,
+		note: Change<String?> = .unchanged
+	) async throws -> TaskItem {
+		var task = try await getTask(id: id).unwrap(orThrow: ReadError.doesntExist)
+
+		if case .change(let newValue) = note {
+			task.note = newValue
+		}
+
+		if case .change(let newValue) = label {
+			task.label = newValue
+		}
+
+		try await db.update(task)
+
+		return task
+	}
+
+	@discardableResult
+	private func updateRootTask(
+		_ id: TaskItem.ID?,
+		on listID: TaskList.ID
+	) async throws -> (previousID: TaskItem.ID?, list: TaskList) {
+		guard
+			var list = try await getList(id: listID)
+		else { throw ReadError.doesntExist }
+
+		let old = list.firstTaskId
+		list.firstTaskId = id
+
+		try await db.update(list)
+
+		return (old, list)
+	}
+
+	// MARK: - Delete
+
+	public func deleteTask(_ id: TaskItem.ID) async throws {
+		guard
+			let task = try await getTask(id: id)
+		else { return }
+		async let previousTaskLoad: TaskItem? = {
+			guard let parentId = task.parentId else { return nil }
+			return try await getTask(id: parentId)
+		}()
+		async let nextTaskLoad: TaskItem? = {
+			guard let nextId = task.nextId else { return nil }
+			return try await getTask(id: nextId)
+		}()
+
+
+		let deletion = {
+			try await db.delete(task)
+		}
+
+		guard let list = try await getList(id: task.listId) else {
+			return try await deletion()
+		}
+
+		let previousTask = try await previousTaskLoad
+		let nextTask = try await nextTaskLoad
+
+		var updates: [TaskItem] = []
+		switch (previousTask, nextTask) {
+		case (.some(var previous), .some(var next)):
+			previous.nextId = next.id
+			next.parentId = previous.id
+			updates = [previous, next]
+		case (nil, nil):
+			try await updateRootTask(nil, on: list.id)
+		case (nil, .some(var next)):
+			try await updateRootTask(next.id, on: list.id)
+			next.parentId = nil
+			updates = [next]
+		case (.some(var previous), nil):
+			previous.nextId = nil
+			updates = [previous]
+		}
+
+		for update in updates {
+			try await db.update(update)
+		}
+		try await deletion()
+	}
+
+	public func deleteList(_ id: TaskList.ID) async throws {
+		guard
+			let list = try await getList(id: id)
+		else { return }
+
+		let stream = try? await getAllTasksStream(on: id)
+
+		try await db.delete(list)
+
+		guard let stream else { return }
+
+		for try await task in stream {
+			try await db.delete(task)
+		}
+	}
+
+	public enum ReadError: Error {
+		case doesntExist
+	}
+}

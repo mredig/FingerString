@@ -6,18 +6,19 @@ import PackageDescription
 let package = Package(
 	name: "FingerString",
 	platforms: [
-		.macOS(.v10_15),
+		.macOS(.v13),
 	],
 	products: [
 		.library(
-			name: "FingerString",
-			targets: ["FingerString"]
+			name: "FingerStringLib",
+			targets: ["FingerStringLib"]
 		),
 		.executable(
 			name: "fingerstring",
 			targets: ["FingerStringCLI"]
 		),
 	],
+
 	dependencies: [
 		.package(
 			url: "https://github.com/Lighter-swift/Lighter.git",
@@ -34,7 +35,7 @@ let package = Package(
 	],
 	targets: [
 		.target(
-			name: "FingerString",
+			name: "FingerStringLib",
 			dependencies: [
 				.product(name: "Lighter", package: "Lighter"),
 				"SwiftPizzaSnips"
@@ -46,7 +47,7 @@ let package = Package(
 		.executableTarget(
 			name: "FingerStringCLI",
 			dependencies: [
-				"FingerString",
+				"FingerStringLib",
 				.product(name: "ArgumentParser", package: "swift-argument-parser"),
 			],
 			swiftSettings: [
@@ -55,7 +56,7 @@ let package = Package(
 		),
 		.testTarget(
 			name: "FingerStringTests",
-			dependencies: ["FingerString"]
+			dependencies: ["FingerStringLib"]
 		),
 	]
 )
