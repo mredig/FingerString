@@ -56,7 +56,10 @@ public struct ListController: Sendable {
 		return new
 	}
 
-	public func createTask(label: String, on listID: TaskList.ID) async throws -> TaskItem {
+	public func createTask(label: String, note: String?, on listID: TaskList.ID) async throws -> TaskItem {
+		guard let list = try await getList(id: listID) else {
+			throw CreateError.noMatchingList
+		}
 		let lastItemOnList = try await getLastTask(on: listID)
 
 		var previousValue: String?
@@ -65,15 +68,30 @@ public struct ListController: Sendable {
 			let hash = Insecure.MD5.hash(data: Data(inputComposite.utf8))
 			previousValue = hash.toHexString()
 			let itemID = String(hash.toHexString().prefix(5))
-			let create = TaskItem(listId: listID, parentId: lastItemOnList?.id, itemId: itemID, label: label)
+			let create = TaskItem(
+				listId: listID,
+				parentId: lastItemOnList?.id,
+				itemId: itemID,
+				label: label,
+				note: note)
 
+			let new: TaskItem
 			do {
-				let new = try await db.insert(create)
-				return new
+				new = try await db.insert(create)
 			} catch {
 				print("Duplicate id, trying again")
+				continue
 			}
+
+			if list.firstTaskId == nil {
+				var listUpdate = list
+				listUpdate.firstTaskId = new.id
+
+				try await db.update(listUpdate)
+			}
+			return new
 		}
+
 	}
 
 	// MARK: - Read
@@ -108,6 +126,7 @@ public struct ListController: Sendable {
 					continuation.finish(throwing: error)
 				}
 			}
+			continuation.finish()
 		}
 
 		return stream
@@ -269,6 +288,10 @@ public struct ListController: Sendable {
 		for try await task in stream {
 			try await db.delete(task)
 		}
+	}
+
+	public enum CreateError: Error {
+		case noMatchingList
 	}
 
 	public enum ReadError: Error {
