@@ -13,6 +13,7 @@ CREATE TABLE task_item (
 	list_id INTEGER NOT NULL REFERENCES task_list(id),
 	prev_id INTEGER REFERENCES task_item(id),
 	next_id INTEGER REFERENCES task_item(id),
+	first_subtask_id INTEGER REFERENCES task_item(id),
 	item_hash_id TEXT UNIQUE NOT NULL,
 	is_complete BOOL NOT NULL,
 	label TEXT NOT NULL,
