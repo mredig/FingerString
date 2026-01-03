@@ -1,4 +1,4 @@
-// Autocreated by sqlite2swift at 2026-01-03T21:56:24Z
+// Autocreated by sqlite2swift at 2026-01-03T22:23:11Z
 
 import SQLite3
 import Foundation
@@ -908,6 +908,50 @@ public func sqlite3_task_item_find(
 	return TaskItem(statement, indices: indices)
 }
 
+/// Fetch the ``TaskItem`` record related to itself (`subtaskParentId`).
+/// 
+/// This fetches the related ``TaskItem`` record using the
+/// ``TaskItem/subtaskParentId`` property.
+/// 
+/// Example:
+/// ```swift
+/// let sourceRecord  : TaskItem = ...
+/// let relatedRecord = sqlite3_task_item_find(db, forSubtaskParent: sourceRecord)
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - record: The ``TaskItem`` record.
+/// - Returns: The related ``TaskItem`` record, or `nil` if not found/error.
+@inlinable
+public func sqlite3_task_item_find(
+	_ db: OpaquePointer!,
+	forSubtaskParent record: TaskItem
+) -> TaskItem?
+{
+	var sql = TaskItem.Schema.select
+	sql.append(#" WHERE "id" = ? LIMIT 1"#)
+	var handle : OpaquePointer? = nil
+	guard sqlite3_prepare_v2(db, sql, -1, &handle, nil) == SQLITE_OK,
+	      let statement = handle else { return nil }
+	defer { sqlite3_finalize(statement) }
+	if let fkey = record.subtaskParentId {
+		sqlite3_bind_int64(statement, 1, Int64(fkey))
+	}
+	else {
+		sqlite3_bind_null(statement, 1)
+	}
+	let rc = sqlite3_step(statement)
+	if rc == SQLITE_DONE {
+		return nil
+	}
+	else if rc != SQLITE_ROW {
+		return nil
+	}
+	let indices = TaskItem.Schema.selectColumnIndices
+	return TaskItem(statement, indices: indices)
+}
+
 /// Fetches the ``TaskList`` records related to a ``TaskItem`` (`firstTaskId`).
 /// 
 /// This fetches the related ``TaskList`` records using the
@@ -1094,6 +1138,59 @@ public func sqlite3_task_items_fetch(
 {
 	var sql = TaskItem.Schema.select
 	sql.append(#" WHERE "first_subtask_id" = ? LIMIT 1"#)
+	if let orderBySQL = orderBySQL {
+		sql.append(" ORDER BY \(orderBySQL)")
+	}
+	if let limit = limit {
+		sql.append(" LIMIT \(limit)")
+	}
+	var handle : OpaquePointer? = nil
+	guard sqlite3_prepare_v2(db, sql, -1, &handle, nil) == SQLITE_OK,
+	      let statement = handle else { return nil }
+	defer { sqlite3_finalize(statement) }
+	sqlite3_bind_int64(statement, 1, Int64(record.id))
+	let indices = TaskItem.Schema.selectColumnIndices
+	var records = [ TaskItem ]()
+	while true {
+		let rc = sqlite3_step(statement)
+		if rc == SQLITE_DONE {
+			break
+		}
+		else if rc != SQLITE_ROW {
+			return nil
+		}
+		records.append(TaskItem(statement, indices: indices))
+	}
+	return records
+}
+
+/// Fetches the ``TaskItem`` records related to itself (`subtaskParentId`).
+/// 
+/// This fetches the related ``TaskItem`` records using the
+/// ``TaskItem/subtaskParentId`` property.
+/// 
+/// Example:
+/// ```swift
+/// let record         : TaskItem = ...
+/// let relatedRecords = sqlite3_task_items_fetch(db, forSubtaskParent: record)
+/// ```
+/// 
+/// - Parameters:
+///   - db: The SQLite database handle (as returned by `sqlite3_open`)
+///   - record: The ``TaskItem`` record.
+///   - orderBySQL: If set, some SQL that is added as an `ORDER BY` clause (e.g. `name DESC`).
+///   - limit: An optional fetch limit.
+/// - Returns: The related ``TaskItem`` records.
+@inlinable
+public func sqlite3_task_items_fetch(
+	_ db: OpaquePointer!,
+	forSubtaskParent record: TaskItem,
+	orderBy orderBySQL: String? = nil,
+	limit: Int? = nil
+) -> [ TaskItem ]?
+{
+	var sql = TaskItem.Schema.select
+	sql.append(#" WHERE "subtask_parent_id" = ? LIMIT 1"#)
 	if let orderBySQL = orderBySQL {
 		sql.append(" ORDER BY \(orderBySQL)")
 	}
@@ -1336,7 +1433,7 @@ public struct FingerStringDB : SQLDatabase, SQLDatabaseAsyncChangeOperations, SQ
 /// 	slug TEXT UNIQUE NOT NULL,
 /// 	title TEXT,
 /// 	description TEXT,
-/// 	first_task_id INTEGER REFERENCES task_item(id)
+/// 	first_task_id INTEGER REFERENCES task_item(id) ON DELETE SET NULL
 /// )
 /// ```
 public struct TaskList : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
@@ -1437,10 +1534,11 @@ public struct TaskList : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
 /// ```sql
 /// CREATE TABLE task_item (
 /// 	id INTEGER PRIMARY KEY NOT NULL,
-/// 	list_id INTEGER NOT NULL REFERENCES task_list(id),
+/// 	list_id INTEGER NOT NULL REFERENCES task_list(id) ON DELETE CASCADE,
 /// 	prev_id INTEGER REFERENCES task_item(id),
 /// 	next_id INTEGER REFERENCES task_item(id),
 /// 	first_subtask_id INTEGER REFERENCES task_item(id),
+/// 	subtask_parent_id INTEGER REFERENCES task_item(id) ON DELETE CASCADE,
 /// 	item_hash_id TEXT UNIQUE NOT NULL,
 /// 	is_complete BOOL NOT NULL,
 /// 	label TEXT NOT NULL,
@@ -1467,6 +1565,9 @@ public struct TaskItem : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
 	/// Column `first_subtask_id` (`INTEGER`), optional (default: `nil`).
 	public var firstSubtaskId : Int?
 	
+	/// Column `subtask_parent_id` (`INTEGER`), optional (default: `nil`).
+	public var subtaskParentId : Int?
+	
 	/// Column `item_hash_id` (`TEXT`), required.
 	public var itemHashId : String
 	
@@ -1487,6 +1588,7 @@ public struct TaskItem : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
 	///   - prevId: Column `prev_id` (`INTEGER`), optional (default: `nil`).
 	///   - nextId: Column `next_id` (`INTEGER`), optional (default: `nil`).
 	///   - firstSubtaskId: Column `first_subtask_id` (`INTEGER`), optional (default: `nil`).
+	///   - subtaskParentId: Column `subtask_parent_id` (`INTEGER`), optional (default: `nil`).
 	///   - itemHashId: Column `item_hash_id` (`TEXT`), required.
 	///   - isComplete: Column `is_complete` (`BOOLEAN`), required.
 	///   - label: Column `label` (`TEXT`), required.
@@ -1498,6 +1600,7 @@ public struct TaskItem : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
 		prevId: Int? = nil,
 		nextId: Int? = nil,
 		firstSubtaskId: Int? = nil,
+		subtaskParentId: Int? = nil,
 		itemHashId: String,
 		isComplete: Bool,
 		label: String,
@@ -1509,6 +1612,7 @@ public struct TaskItem : Identifiable, SQLKeyedTableRecord, Codable, Sendable {
 		self.prevId = prevId
 		self.nextId = nextId
 		self.firstSubtaskId = firstSubtaskId
+		self.subtaskParentId = subtaskParentId
 		self.itemHashId = itemHashId
 		self.isComplete = isComplete
 		self.label = label
@@ -1550,7 +1654,7 @@ public extension TaskList {
 				slug TEXT UNIQUE NOT NULL,
 				title TEXT,
 				description TEXT,
-				first_task_id INTEGER REFERENCES task_item(id)
+				first_task_id INTEGER REFERENCES task_item(id) ON DELETE SET NULL
 			);
 			"""#
 		
@@ -1867,7 +1971,7 @@ public extension TaskItem {
 	/// It is used for static type lookups and more.
 	struct Schema : SQLKeyedTableSchema, SQLSwiftMatchableSchema, SQLCreatableSchema {
 		
-		public typealias PropertyIndices = ( idx_id: Int32, idx_listId: Int32, idx_prevId: Int32, idx_nextId: Int32, idx_firstSubtaskId: Int32, idx_itemHashId: Int32, idx_isComplete: Int32, idx_label: Int32, idx_note: Int32 )
+		public typealias PropertyIndices = ( idx_id: Int32, idx_listId: Int32, idx_prevId: Int32, idx_nextId: Int32, idx_firstSubtaskId: Int32, idx_subtaskParentId: Int32, idx_itemHashId: Int32, idx_isComplete: Int32, idx_label: Int32, idx_note: Int32 )
 		public typealias RecordType = TaskItem
 		public typealias MatchClosureType = ( TaskItem ) -> Bool
 		
@@ -1875,7 +1979,7 @@ public extension TaskItem {
 		public static let externalName = "task_item"
 		
 		/// The number of columns the `task_item` table has.
-		public static let columnCount : Int32 = 9
+		public static let columnCount : Int32 = 10
 		
 		/// Information on the records primary key (``TaskItem/id``).
 		public static let primaryKeyColumn = MappedColumn<TaskItem, Int>(
@@ -1889,10 +1993,11 @@ public extension TaskItem {
 			#"""
 			CREATE TABLE task_item (
 				id INTEGER PRIMARY KEY NOT NULL,
-				list_id INTEGER NOT NULL REFERENCES task_list(id),
+				list_id INTEGER NOT NULL REFERENCES task_list(id) ON DELETE CASCADE,
 				prev_id INTEGER REFERENCES task_item(id),
 				next_id INTEGER REFERENCES task_item(id),
 				first_subtask_id INTEGER REFERENCES task_item(id),
+				subtask_parent_id INTEGER REFERENCES task_item(id) ON DELETE CASCADE,
 				item_hash_id TEXT UNIQUE NOT NULL,
 				is_complete BOOL NOT NULL,
 				label TEXT NOT NULL,
@@ -1901,37 +2006,37 @@ public extension TaskItem {
 			"""#
 		
 		/// SQL to `SELECT` all columns of the `task_item` table.
-		public static let select = #"SELECT "id", "list_id", "prev_id", "next_id", "first_subtask_id", "item_hash_id", "is_complete", "label", "note" FROM "task_item""#
+		public static let select = #"SELECT "id", "list_id", "prev_id", "next_id", "first_subtask_id", "subtask_parent_id", "item_hash_id", "is_complete", "label", "note" FROM "task_item""#
 		
 		/// SQL fragment representing all columns.
-		public static let selectColumns = #""id", "list_id", "prev_id", "next_id", "first_subtask_id", "item_hash_id", "is_complete", "label", "note""#
+		public static let selectColumns = #""id", "list_id", "prev_id", "next_id", "first_subtask_id", "subtask_parent_id", "item_hash_id", "is_complete", "label", "note""#
 		
 		/// Index positions of the properties in ``selectColumns``.
-		public static let selectColumnIndices : PropertyIndices = ( 0, 1, 2, 3, 4, 5, 6, 7, 8 )
+		public static let selectColumnIndices : PropertyIndices = ( 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 )
 		
 		/// SQL to `SELECT` all columns of the `task_item` table using a Swift filter.
-		public static let matchSelect = #"SELECT "id", "list_id", "prev_id", "next_id", "first_subtask_id", "item_hash_id", "is_complete", "label", "note" FROM "task_item" WHERE taskItems_swift_match("id", "list_id", "prev_id", "next_id", "first_subtask_id", "item_hash_id", "is_complete", "label", "note") != 0"#
+		public static let matchSelect = #"SELECT "id", "list_id", "prev_id", "next_id", "first_subtask_id", "subtask_parent_id", "item_hash_id", "is_complete", "label", "note" FROM "task_item" WHERE taskItems_swift_match("id", "list_id", "prev_id", "next_id", "first_subtask_id", "subtask_parent_id", "item_hash_id", "is_complete", "label", "note") != 0"#
 		
 		/// SQL to `UPDATE` all columns of the `task_item` table.
-		public static let update = #"UPDATE "task_item" SET "list_id" = ?, "prev_id" = ?, "next_id" = ?, "first_subtask_id" = ?, "item_hash_id" = ?, "is_complete" = ?, "label" = ?, "note" = ? WHERE "id" = ?"#
+		public static let update = #"UPDATE "task_item" SET "list_id" = ?, "prev_id" = ?, "next_id" = ?, "first_subtask_id" = ?, "subtask_parent_id" = ?, "item_hash_id" = ?, "is_complete" = ?, "label" = ?, "note" = ? WHERE "id" = ?"#
 		
 		/// Property parameter indicies in the ``update`` SQL
-		public static let updateParameterIndices : PropertyIndices = ( 9, 1, 2, 3, 4, 5, 6, 7, 8 )
+		public static let updateParameterIndices : PropertyIndices = ( 10, 1, 2, 3, 4, 5, 6, 7, 8, 9 )
 		
 		/// SQL to `INSERT` a record into the `task_item` table.
-		public static let insert = #"INSERT INTO "task_item" ( "list_id", "prev_id", "next_id", "first_subtask_id", "item_hash_id", "is_complete", "label", "note" ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )"#
+		public static let insert = #"INSERT INTO "task_item" ( "list_id", "prev_id", "next_id", "first_subtask_id", "subtask_parent_id", "item_hash_id", "is_complete", "label", "note" ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? )"#
 		
 		/// SQL to `INSERT` a record into the `task_item` table.
-		public static let insertReturning = #"INSERT INTO "task_item" ( "list_id", "prev_id", "next_id", "first_subtask_id", "item_hash_id", "is_complete", "label", "note" ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING "id", "list_id", "prev_id", "next_id", "first_subtask_id", "item_hash_id", "is_complete", "label", "note""#
+		public static let insertReturning = #"INSERT INTO "task_item" ( "list_id", "prev_id", "next_id", "first_subtask_id", "subtask_parent_id", "item_hash_id", "is_complete", "label", "note" ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING "id", "list_id", "prev_id", "next_id", "first_subtask_id", "subtask_parent_id", "item_hash_id", "is_complete", "label", "note""#
 		
 		/// Property parameter indicies in the ``insert`` SQL
-		public static let insertParameterIndices : PropertyIndices = ( -1, 1, 2, 3, 4, 5, 6, 7, 8 )
+		public static let insertParameterIndices : PropertyIndices = ( -1, 1, 2, 3, 4, 5, 6, 7, 8, 9 )
 		
 		/// SQL to `DELETE` a record from the `task_item` table.
 		public static let delete = #"DELETE FROM "task_item" WHERE "id" = ?"#
 		
 		/// Property parameter indicies in the ``delete`` SQL
-		public static let deleteParameterIndices : PropertyIndices = ( 1, -1, -1, -1, -1, -1, -1, -1, -1 )
+		public static let deleteParameterIndices : PropertyIndices = ( 1, -1, -1, -1, -1, -1, -1, -1, -1, -1 )
 		
 		/// Lookup property indices by column name in a statement handle.
 		/// 
@@ -1950,7 +2055,7 @@ public extension TaskItem {
 		public static func lookupColumnIndices(`in` statement: OpaquePointer!)
 			-> PropertyIndices
 		{
-			var indices : PropertyIndices = ( -1, -1, -1, -1, -1, -1, -1, -1, -1 )
+			var indices : PropertyIndices = ( -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 )
 			for i in 0..<sqlite3_column_count(statement) {
 				let col = sqlite3_column_name(statement, i)
 				if strcmp(col!, "id") == 0 {
@@ -1967,6 +2072,9 @@ public extension TaskItem {
 				}
 				else if strcmp(col!, "first_subtask_id") == 0 {
 					indices.idx_firstSubtaskId = i
+				}
+				else if strcmp(col!, "subtask_parent_id") == 0 {
+					indices.idx_subtaskParentId = i
 				}
 				else if strcmp(col!, "item_hash_id") == 0 {
 					indices.idx_itemHashId = i
@@ -2017,6 +2125,7 @@ public extension TaskItem {
 						prevId: (indices.idx_prevId >= 0) && (indices.idx_prevId < argc) ? (sqlite3_value_type(argv[Int(indices.idx_prevId)]) != SQLITE_NULL ? Int(sqlite3_value_int64(argv[Int(indices.idx_prevId)])) : nil) : RecordType.schema.prevId.defaultValue,
 						nextId: (indices.idx_nextId >= 0) && (indices.idx_nextId < argc) ? (sqlite3_value_type(argv[Int(indices.idx_nextId)]) != SQLITE_NULL ? Int(sqlite3_value_int64(argv[Int(indices.idx_nextId)])) : nil) : RecordType.schema.nextId.defaultValue,
 						firstSubtaskId: (indices.idx_firstSubtaskId >= 0) && (indices.idx_firstSubtaskId < argc) ? (sqlite3_value_type(argv[Int(indices.idx_firstSubtaskId)]) != SQLITE_NULL ? Int(sqlite3_value_int64(argv[Int(indices.idx_firstSubtaskId)])) : nil) : RecordType.schema.firstSubtaskId.defaultValue,
+						subtaskParentId: (indices.idx_subtaskParentId >= 0) && (indices.idx_subtaskParentId < argc) ? (sqlite3_value_type(argv[Int(indices.idx_subtaskParentId)]) != SQLITE_NULL ? Int(sqlite3_value_int64(argv[Int(indices.idx_subtaskParentId)])) : nil) : RecordType.schema.subtaskParentId.defaultValue,
 						itemHashId: ((indices.idx_itemHashId >= 0) && (indices.idx_itemHashId < argc) ? (sqlite3_value_text(argv[Int(indices.idx_itemHashId)]).flatMap(String.init(cString:))) : nil) ?? RecordType.schema.itemHashId.defaultValue,
 						isComplete: (indices.idx_isComplete >= 0) && (indices.idx_isComplete < argc) && (sqlite3_value_type(argv[Int(indices.idx_isComplete)]) != SQLITE_NULL) ? (sqlite3_value_int64(argv[Int(indices.idx_isComplete)]) != 0) : RecordType.schema.isComplete.defaultValue,
 						label: ((indices.idx_label >= 0) && (indices.idx_label < argc) ? (sqlite3_value_text(argv[Int(indices.idx_label)]).flatMap(String.init(cString:))) : nil) ?? RecordType.schema.label.defaultValue,
@@ -2107,6 +2216,14 @@ public extension TaskItem {
 			destinationColumn: TaskItem.schema.id
 		)
 		
+		/// Type information for property ``TaskItem/subtaskParentId`` (`subtask_parent_id` column).
+		public let subtaskParentId = MappedForeignKey<TaskItem, Int?, MappedColumn<TaskItem, Int>>(
+			externalName: "subtask_parent_id",
+			defaultValue: nil,
+			keyPath: \TaskItem.subtaskParentId,
+			destinationColumn: TaskItem.schema.id
+		)
+		
 		/// Type information for property ``TaskItem/itemHashId`` (`item_hash_id` column).
 		public let itemHashId = MappedColumn<TaskItem, String>(
 			externalName: "item_hash_id",
@@ -2136,7 +2253,7 @@ public extension TaskItem {
 		)
 		
 		#if swift(>=5.7)
-		public var _allColumns : [ any SQLColumn ] { [ id, listId, prevId, nextId, firstSubtaskId, itemHashId, isComplete, label, note ] }
+		public var _allColumns : [ any SQLColumn ] { [ id, listId, prevId, nextId, firstSubtaskId, subtaskParentId, itemHashId, isComplete, label, note ] }
 		#endif // swift(>=5.7)
 		
 		public init()
@@ -2185,6 +2302,7 @@ public extension TaskItem {
 			prevId: (indices.idx_prevId >= 0) && (indices.idx_prevId < argc) ? (sqlite3_column_type(statement, indices.idx_prevId) != SQLITE_NULL ? Int(sqlite3_column_int64(statement, indices.idx_prevId)) : nil) : Self.schema.prevId.defaultValue,
 			nextId: (indices.idx_nextId >= 0) && (indices.idx_nextId < argc) ? (sqlite3_column_type(statement, indices.idx_nextId) != SQLITE_NULL ? Int(sqlite3_column_int64(statement, indices.idx_nextId)) : nil) : Self.schema.nextId.defaultValue,
 			firstSubtaskId: (indices.idx_firstSubtaskId >= 0) && (indices.idx_firstSubtaskId < argc) ? (sqlite3_column_type(statement, indices.idx_firstSubtaskId) != SQLITE_NULL ? Int(sqlite3_column_int64(statement, indices.idx_firstSubtaskId)) : nil) : Self.schema.firstSubtaskId.defaultValue,
+			subtaskParentId: (indices.idx_subtaskParentId >= 0) && (indices.idx_subtaskParentId < argc) ? (sqlite3_column_type(statement, indices.idx_subtaskParentId) != SQLITE_NULL ? Int(sqlite3_column_int64(statement, indices.idx_subtaskParentId)) : nil) : Self.schema.subtaskParentId.defaultValue,
 			itemHashId: ((indices.idx_itemHashId >= 0) && (indices.idx_itemHashId < argc) ? (sqlite3_column_text(statement, indices.idx_itemHashId).flatMap(String.init(cString:))) : nil) ?? Self.schema.itemHashId.defaultValue,
 			isComplete: (indices.idx_isComplete >= 0) && (indices.idx_isComplete < argc) && (sqlite3_column_type(statement, indices.idx_isComplete) != SQLITE_NULL) ? (sqlite3_column_int64(statement, indices.idx_isComplete) != 0) : Self.schema.isComplete.defaultValue,
 			label: ((indices.idx_label >= 0) && (indices.idx_label < argc) ? (sqlite3_column_text(statement, indices.idx_label).flatMap(String.init(cString:))) : nil) ?? Self.schema.label.defaultValue,
@@ -2201,12 +2319,12 @@ public extension TaskItem {
 	/// var statement : OpaquePointer?
 	/// sqlite3_prepare_v2(
 	///   dbHandle,
-	///   #"UPDATE "task_item" SET "list_id" = ?, "prev_id" = ?, "next_id" = ?, "first_subtask_id" = ?, "item_hash_id" = ?, "is_complete" = ?, "label" = ?, "note" = ? WHERE "id" = ?"#,
+	///   #"UPDATE "task_item" SET "list_id" = ?, "prev_id" = ?, "next_id" = ?, "first_subtask_id" = ?, "subtask_parent_id" = ?, "item_hash_id" = ?, "is_complete" = ?, "label" = ?, "note" = ? WHERE "id" = ?"#,
 	///   -1, &statement, nil
 	/// )
 	/// 
-	/// let record = TaskItem(id: 1, listId: 2, prevId: 3, nextId: 4, firstSubtaskId: 5, itemHashId: "Hello", isComplete: ..., label: "World", note: "Duck")
-	/// let ok = record.bind(to: statement, indices: ( 9, 1, 2, 3, 4, 5, 6, 7, 8 )) {
+	/// let record = TaskItem(id: 1, listId: 2, prevId: 3, nextId: 4, firstSubtaskId: 5, subtaskParentId: 6, itemHashId: "Hello", isComplete: ..., label: "World")
+	/// let ok = record.bind(to: statement, indices: ( 10, 1, 2, 3, 4, 5, 6, 7, 8, 9 )) {
 	///   sqlite3_step(statement) == SQLITE_DONE
 	/// }
 	/// sqlite3_finalize(statement)
@@ -2253,6 +2371,14 @@ public extension TaskItem {
 			}
 			else {
 				sqlite3_bind_null(statement, indices.idx_firstSubtaskId)
+			}
+		}
+		if indices.idx_subtaskParentId >= 0 {
+			if let subtaskParentId = subtaskParentId {
+				sqlite3_bind_int64(statement, indices.idx_subtaskParentId, Int64(subtaskParentId))
+			}
+			else {
+				sqlite3_bind_null(statement, indices.idx_subtaskParentId)
 			}
 		}
 		return try itemHashId.withCString() { ( s ) in
@@ -2418,6 +2544,29 @@ public extension SQLRecordFetchOperations
 		)
 	}
 	
+	/// Fetch the ``TaskItem`` record related to itself (`subtaskParentId`).
+	/// 
+	/// This fetches the related ``TaskItem`` record using the
+	/// ``TaskItem/subtaskParentId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let sourceRecord  : TaskItem = ...
+	/// let relatedRecord = try db.taskItems.find(forSubtaskParent: sourceRecord)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``TaskItem`` record.
+	/// - Returns: The related ``TaskItem`` record, or `nil` if not found.
+	@inlinable
+	func find(forSubtaskParent record: TaskItem) throws -> TaskItem?
+	{
+		try operations[dynamicMember: \.taskItems].findTarget(
+			for: \.subtaskParentId,
+			in: record
+		)
+	}
+	
 	/// Fetches the ``TaskItem`` records related to a ``TaskList`` (`listId`).
 	/// 
 	/// This fetches the related ``TaskList`` records using the
@@ -2501,6 +2650,28 @@ public extension SQLRecordFetchOperations
 		throws -> [ TaskItem ]
 	{
 		try fetch(for: \.firstSubtaskId, in: record, limit: limit)
+	}
+	
+	/// Fetches the ``TaskItem`` records related to itself (`subtaskParentId`).
+	/// 
+	/// This fetches the related ``TaskItem`` records using the
+	/// ``TaskItem/subtaskParentId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let record         : TaskItem = ...
+	/// let relatedRecords = try db.taskItems.fetch(forSubtaskParent: record)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``TaskItem`` record.
+	///   - limit: An optional limit of records to fetch (defaults to `nil`).
+	/// - Returns: The related ``TaskItem`` records.
+	@inlinable
+	func fetch(forSubtaskParent record: TaskItem, limit: Int? = nil)
+		throws -> [ TaskItem ]
+	{
+		try fetch(for: \.subtaskParentId, in: record, limit: limit)
 	}
 }
 
@@ -2662,6 +2833,29 @@ public extension SQLRecordFetchOperations
 		)
 	}
 	
+	/// Fetch the ``TaskItem`` record related to itself (`subtaskParentId`).
+	/// 
+	/// This fetches the related ``TaskItem`` record using the
+	/// ``TaskItem/subtaskParentId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let sourceRecord  : TaskItem = ...
+	/// let relatedRecord = try await db.taskItems.find(forSubtaskParent: sourceRecord)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``TaskItem`` record.
+	/// - Returns: The related ``TaskItem`` record, or `nil` if not found.
+	@inlinable
+	func find(forSubtaskParent record: TaskItem) async throws -> TaskItem?
+	{
+		try await operations[dynamicMember: \.taskItems].findTarget(
+			for: \.subtaskParentId,
+			in: record
+		)
+	}
+	
 	/// Fetches the ``TaskItem`` records related to a ``TaskList`` (`listId`).
 	/// 
 	/// This fetches the related ``TaskList`` records using the
@@ -2745,6 +2939,28 @@ public extension SQLRecordFetchOperations
 		async throws -> [ TaskItem ]
 	{
 		try await fetch(for: \.firstSubtaskId, in: record, limit: limit)
+	}
+	
+	/// Fetches the ``TaskItem`` records related to itself (`subtaskParentId`).
+	/// 
+	/// This fetches the related ``TaskItem`` records using the
+	/// ``TaskItem/subtaskParentId`` property.
+	/// 
+	/// Example:
+	/// ```swift
+	/// let record         : TaskItem = ...
+	/// let relatedRecords = try await db.taskItems.fetch(forSubtaskParent: record)
+	/// ```
+	/// 
+	/// - Parameters:
+	///   - record: The ``TaskItem`` record.
+	///   - limit: An optional limit of records to fetch (defaults to `nil`).
+	/// - Returns: The related ``TaskItem`` records.
+	@inlinable
+	func fetch(forSubtaskParent record: TaskItem, limit: Int? = nil)
+		async throws -> [ TaskItem ]
+	{
+		try await fetch(for: \.subtaskParentId, in: record, limit: limit)
 	}
 }
 #endif // required canImports
