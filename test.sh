@@ -31,14 +31,14 @@ echo
 
 # Test 3: Add first task
 echo -e "${GREEN}3. Add first task${NC}"
-TASK1_OUTPUT=$($CMD item-add tasks "Buy groceries")
+TASK1_OUTPUT=$($CMD task-add tasks "Buy groceries")
 TASK1_ID=$(echo "$TASK1_OUTPUT" | sed -n 's/.*\[\([^]]*\)\].*/\1/p')
 echo "$TASK1_OUTPUT"
 echo
 
 # Test 4: Add second task with note
 echo -e "${GREEN}4. Add second task with note${NC}"
-TASK2_OUTPUT=$($CMD item-add tasks "Write documentation" --note "Update README and API docs")
+TASK2_OUTPUT=$($CMD task-add tasks "Write documentation" --note "Update README and API docs")
 TASK2_ID=$(echo "$TASK2_OUTPUT" | sed -n 's/.*\[\([^]]*\)\].*/\1/p')
 echo "$TASK2_OUTPUT"
 echo
@@ -50,7 +50,7 @@ echo
 
 # Test 6: Complete a task
 echo -e "${GREEN}6. Complete first task${NC}"
-$CMD item-complete "$TASK1_ID"
+$CMD task-complete "$TASK1_ID"
 echo
 
 # Test 7: View list with tasks (after completing one)
@@ -61,6 +61,11 @@ echo
 # Test 8: View list showing completed tasks
 echo -e "${GREEN}8. View list showing all tasks (including completed)${NC}"
 $CMD list-view tasks --show-completed-tasks
+echo
+
+# Test 9: Delete completed task
+echo -e "${GREEN}9. Delete completed task${NC}"
+$CMD task-delete $TASK1_ID --force
 echo
 
 echo -e "${GREEN}=== All tests completed ===${NC}"

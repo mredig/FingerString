@@ -2,19 +2,19 @@ import ArgumentParser
 import FingerStringLib
 import Foundation
 
-struct ItemAdd: AsyncParsableCommand {
+struct TaskAdd: AsyncParsableCommand {
 	static let configuration = CommandConfiguration(
-		commandName: "item-add",
-		abstract: "Add an item to a list"
+		commandName: "task-add",
+		abstract: "Add an task to a list"
 	)
 
 	@Argument(help: "Slug of the target list")
 	var listSlug: String
 
-	@Argument(help: "Label for the item")
+	@Argument(help: "Label for the task")
 	var label: String
 
-	@Option(help: "Optional note for the item")
+	@Option(help: "Optional note for the task")
 	var note: String?
 
 	func run() async throws {
@@ -29,6 +29,6 @@ struct ItemAdd: AsyncParsableCommand {
 
 		let task = try await controller.createTask(label: label, note: note, on: list.id)
 		
-		print("Added item: [\(task.itemHashId)] to \(list.inlineTitle): \(task.label)")
+		print("Added task: [\(task.itemHashId)] to \(list.inlineTitle): \(task.label)")
 	}
 }
