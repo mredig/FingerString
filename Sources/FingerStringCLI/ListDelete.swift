@@ -1,11 +1,3 @@
-//
-//  ListDelete.swift
-//  FingerString
-//
-//  Created by Michael Redig on 1/2/26.
-//
-
-
 import ArgumentParser
 import FingerStringLib
 import Foundation
@@ -23,17 +15,28 @@ struct ListDelete: AsyncParsableCommand {
 	var force: Bool = false
 
 	func run() async throws {
-//		if !force {
-//			print("Delete list '\(slug)'? (yes/no)")
-//			guard let input = readLine(),
-//				  input.lowercased() == "yes" else {
-//				print("Cancelled")
-//				return
-//			}
-//		}
-//
-//		let db = try await FingerStringDatabase.create()
-//		try await db.deleteList(slug: slug)
-//		print("Deleted list '\(slug)'")
+		let controller = FingerStringCLI.controller
+
+		guard
+			let list = try await controller.getList(withSlug: slug)
+		else {
+			print("No list with slug \(slug)")
+			return
+		}
+
+		if force == false {
+			print("Delete list '\(list.inlineTitle)'? (yes/no)")
+			guard
+				let input = readLine(),
+				input.lowercased() == "y"
+			else {
+				print("Cancelled")
+				return
+			}
+		}
+
+		try await controller.deleteList(list.id)
+
+		print("Deleted list '\(list.inlineTitle)'")
 	}
 }

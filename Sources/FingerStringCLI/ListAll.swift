@@ -1,11 +1,3 @@
-//
-//  ListAll.swift
-//  FingerString
-//
-//  Created by Michael Redig on 1/2/26.
-//
-
-
 import ArgumentParser
 import FingerStringLib
 import Foundation
@@ -16,22 +8,22 @@ struct ListAll: AsyncParsableCommand {
 		abstract: "List all lists"
 	)
 
+	@Flag(help: "Include list descriptions")
+	var includeDescriptions: Bool = false
+
 	func run() async throws {
-//		let db = try await FingerStringDatabase.create()
-//		let lists = try await db.getAllLists()
-//
-//		if lists.isEmpty {
-//			print("No lists found")
-//			return
-//		}
-//
-//		print("📚 Task Lists:")
-//		for list in lists {
-//			print("  • \(list.slug)", terminator: "")
-//			if let title = list.title {
-//				print(" - \(title)", terminator: "")
-//			}
-//			print()
-//		}
+		let controller = FingerStringCLI.controller
+		let lists = try await controller.getAllLists()
+
+		guard lists.isOccupied else {
+			print("No lists found")
+			return
+		}
+
+		for list in lists {
+			print(" * \(list.headerTitle)")
+			guard includeDescriptions, let description = list.description else { continue }
+			print("\t\(description)")
+		}
 	}
 }
