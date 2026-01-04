@@ -12,7 +12,7 @@ public enum Constants {
 		.homeDirectory
 		.appending(path: ".config")
 		.appending(path: "FingerString")
-		.appending(path: "FingerString")
+		.appending(path: "store")
 		.appendingPathExtension("db")
 }
 
@@ -51,7 +51,7 @@ public struct ListController: Sendable {
 
 	// MARK: - Create
 	public func createList(with slug: String, friendlyTitle: String?, description: String?) async throws -> TaskList {
-		let create = TaskList(slug: slug.lowercased())
+		let create = TaskList(slug: slug.lowercased(), title: friendlyTitle, description: description)
 		let new = try await db.insert(create)
 		return new
 	}
@@ -113,19 +113,21 @@ public struct ListController: Sendable {
 		try await db.taskLists.find(by: \.slug, slug)
 	}
 
-	public func getAllTasksStream(on listID: TaskList.ID) async throws -> AsyncThrowingStream<TaskItem, Error> {
+	public func getAllTasksStream(on listID: TaskList.ID) async throws -> AsyncThrowingStream<(index: Int, task: TaskItem), Error> {
 		let list = try await getList(id: listID)
-		let (stream, continuation) = AsyncThrowingStream.makeStream(of: TaskItem.self)
+		let (stream, continuation) = AsyncThrowingStream.makeStream(of: (index: Int, task: TaskItem).self)
 
 		Task {
 			var taskID = list?.firstTaskId
+			var currentIndex = 0
 
 			while let currentTaskID = taskID {
+				defer { currentIndex += 1 }
 				do {
 					guard
 						let task = try await getTask(id: currentTaskID)
 					else { throw ReadError.doesntExist }
-					continuation.yield(task)
+					continuation.yield((currentIndex, task))
 					taskID = task.nextId
 				} catch {
 					taskID = nil
@@ -143,7 +145,7 @@ public struct ListController: Sendable {
 
 		let stream = try await getAllTasksStream(on: listID)
 
-		for try await task in stream {
+		for try await (_, task) in stream {
 			tasks.append(task)
 		}
 
@@ -163,11 +165,9 @@ public struct ListController: Sendable {
 
 		let stream = try await getAllTasksStream(on: listID)
 
-		var currentIndex = 0
 		// note the stream is known to continue firing after finding a match. this is a future fix
-		for try await taskItem in stream {
-			defer { currentIndex += 1 }
-			guard currentIndex == index else { continue }
+		for try await (taskIndex, taskItem) in stream {
+			guard taskIndex == index else { continue }
 			return taskItem
 		}
 
@@ -179,15 +179,14 @@ public struct ListController: Sendable {
 			let list = try await getList(id: listID)
 		else { return nil }
 
-		var itemID = list.firstTaskId
+		let stream = try await getAllTasksStream(on: listID)
 
-		var task: TaskItem?
-		while let currentItemID = itemID {
-			task = try await getTask(id: currentItemID)
-			itemID = task?.nextId
+		var currentTask: TaskItem?
+		for try await (_, task) in stream {
+			currentTask = task
 		}
 
-		return task
+		return currentTask
 	}
 
 	// MARK: - Update
@@ -294,15 +293,7 @@ public struct ListController: Sendable {
 			let list = try await getList(id: id)
 		else { return }
 
-		let stream = try? await getAllTasksStream(on: id)
-
 		try await db.delete(list)
-
-		guard let stream else { return }
-
-		for try await task in stream {
-			try await db.delete(task)
-		}
 	}
 
 	public enum CreateError: Error {

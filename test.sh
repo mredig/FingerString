@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+swift build
+BUILDPATH=$(swift build --show-bin-path)
+
+CMD="${BUILDPATH}/fingerstring"
+
+set -e
+
+# Colors for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Clean up old database
+rm -f "${HOME}/.config/FingerString/store.db"
+mkdir -p ~/.config/FingerString
+
+echo -e "${BLUE}=== FingerString Test Suite ===${NC}\n"
+
+# set -x
+# Test 1: Create list
+echo -e "${GREEN}1. Create list${NC}"
+$CMD list-create tasks --title "My Tasks" --description "Daily tasks"
+echo
+
+# Test 2: View empty list
+echo -e "${GREEN}2. View empty list${NC}"
+$CMD list-view tasks
+echo
+
+# Test 3: Add first task
+echo -e "${GREEN}3. Add first task${NC}"
+TASK1_OUTPUT=$($CMD item-add tasks "Buy groceries")
+TASK1_ID=$(echo "$TASK1_OUTPUT" | sed -n 's/.*\[\([^]]*\)\].*/\1/p')
+echo "$TASK1_OUTPUT"
+echo
+
+# Test 4: Add second task with note
+echo -e "${GREEN}4. Add second task with note${NC}"
+TASK2_OUTPUT=$($CMD item-add tasks "Write documentation" --note "Update README and API docs")
+TASK2_ID=$(echo "$TASK2_OUTPUT" | sed -n 's/.*\[\([^]]*\)\].*/\1/p')
+echo "$TASK2_OUTPUT"
+echo
+
+# Test 5: View list with tasks
+echo -e "${GREEN}5. View list with tasks${NC}"
+$CMD list-view tasks
+echo
+
+# Test 6: Complete a task
+echo -e "${GREEN}6. Complete first task${NC}"
+$CMD item-complete "$TASK1_ID"
+echo
+
+# Test 7: View list with tasks (after completing one)
+echo -e "${GREEN}7. View list with tasks (one completed)${NC}"
+$CMD list-view tasks
+echo
+
+# Test 8: View list showing completed tasks
+echo -e "${GREEN}8. View list showing all tasks (including completed)${NC}"
+$CMD list-view tasks --show-completed-tasks
+echo
+
+echo -e "${GREEN}=== All tests completed ===${NC}"

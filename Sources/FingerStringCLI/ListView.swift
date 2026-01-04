@@ -22,25 +22,24 @@ struct ListView: AsyncParsableCommand {
 			return
 		}
 
-		print("📋 \(list.slug)")
-		if let title = list.title {
-			print("   \(title)")
-		}
-		if let description = list.description {
-			print("   \(description)")
-		}
+		let listOutputBuilder = [
+			list.headerTitle,
+			list.description
+		]
+
+		print(listOutputBuilder.compactMap(\.self).joined(separator: "\n"))
 		print()
 
 		let itemsStream = try await FingerStringCLI.controller.getAllTasksStream(on: list.id)
 
 		var index = 0
-		for try await task in itemsStream {
+		for try await (_, task) in itemsStream {
 			printItem(task)
 			index += 1
 		}
 
 		if index == 0 {
-			print("\t(empty)")
+			print("(empty)")
 		}
 	}
 
