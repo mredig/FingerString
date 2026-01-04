@@ -34,6 +34,18 @@ public struct ListController: Sendable {
 		}
 
 		self.db = db
+
+		do {
+			try db.execute("PRAGMA foreign_keys = ON")
+		} catch {
+			print("Couldn't enable foreign keys")
+		}
+
+		do {
+			try db.execute("PRAGMA journal_mode = WAL")
+		} catch {
+			print("Couldn't enable WAL mode")
+		}
 	}
 
 	public static func createDB(at location: URL = Constants.defaultDBURL) throws(DBError) {
@@ -51,20 +63,6 @@ public struct ListController: Sendable {
 		// Close the temporary connection handle since we'll be using FingerStringDB
 		if let pointer = pointer {
 			sqlite3_close(pointer)
-		}
-
-		let db = FingerStringDB(url: location)
-
-		do {
-			try db.execute("PRAGMA foreign_keys = ON")
-		} catch {
-			throw .cannotEnableForeignKeys
-		}
-
-		do {
-			try db.execute("PRAGMA journal_mode = WAL")
-		} catch {
-			throw .cannotEnableForeignKeys
 		}
 	}
 
@@ -324,7 +322,5 @@ public struct ListController: Sendable {
 
 	public enum DBError: Error {
 		case cannotCreateDB
-		case cannotEnableForeignKeys
-		case cannotEnableWAL
 	}
 }
