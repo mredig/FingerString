@@ -7,15 +7,6 @@ import Foundation
 import SwiftPizzaSnips
 import SQLite3
 
-public enum Constants {
-	public static let defaultDBURL = URL
-		.homeDirectory
-		.appending(path: ".config")
-		.appending(path: "FingerString")
-		.appending(path: "store")
-		.appendingPathExtension("db")
-}
-
 public struct ListController: Sendable {
 
 	public static let defaultDB: FingerStringDB = {
