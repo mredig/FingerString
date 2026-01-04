@@ -45,7 +45,21 @@ public struct ListController: Sendable {
 			&pointer)
 
 		guard rc == SQLITE_OK else {
-			throw DBError.cannotCreateDB
+			throw .cannotCreateDB
+		}
+
+		let db = FingerStringDB(url: location)
+
+		do {
+			try db.execute("PRAGMA foreign_keys = ON")
+		} catch {
+			throw .cannotEnableForeignKeys
+		}
+
+		do {
+			try db.execute("PRAGMA journal_mode = WAL")
+		} catch {
+			throw .cannotEnableForeignKeys
 		}
 	}
 
@@ -305,5 +319,7 @@ public struct ListController: Sendable {
 
 	public enum DBError: Error {
 		case cannotCreateDB
+		case cannotEnableForeignKeys
+		case cannotEnableWAL
 	}
 }

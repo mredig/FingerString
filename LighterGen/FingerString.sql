@@ -1,4 +1,5 @@
 PRAGMA journal_mode = WAL;
+PRAGMA foreign_keys = ON;
 
 CREATE TABLE task_list (
 	id INTEGER PRIMARY KEY NOT NULL,

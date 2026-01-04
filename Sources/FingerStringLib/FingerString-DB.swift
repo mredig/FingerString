@@ -1,4 +1,4 @@
-// Autocreated by sqlite2swift at 2026-01-03T22:23:11Z
+// Autocreated by sqlite2swift at 2026-01-04T02:10:38Z
 
 import SQLite3
 import Foundation
