@@ -75,7 +75,7 @@ public struct ListController: Sendable {
 			let inputComposite = label + "\(previousValue, default: "")"
 			let hash = Insecure.MD5.hash(data: Data(inputComposite.utf8))
 			previousValue = hash.toHexString()
-			let itemHashID = String(hash.toHexString().prefix(5))
+			let itemHashID = String(hash.toHexString().prefix(Constants.hashIDLength))
 			let create = TaskItem(
 				listId: listID,
 				prevId: lastItemOnList?.id,
