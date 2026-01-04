@@ -64,11 +64,19 @@ public struct ListController: Sendable {
 		return new
 	}
 
-	public func createTask(label: String, note: String?, on listID: TaskList.ID) async throws -> TaskItem {
-		guard let list = try await getList(id: listID) else {
-			throw CreateError.noMatchingList
+	public func createTask(label: String, note: String?, on taskParent: TaskParent) async throws -> TaskItem {
+		let list: TaskList
+		let parentTask: TaskItem?
+		let lastItemOnList = try await getLastTask(on: taskParent)
+		switch taskParent {
+		case .list(let id):
+			list = try await getList(id: id).unwrap(orThrow: ReadError.doesntExist)
+			parentTask = nil
+		case .task(let hashID):
+			let parentTaskT = try await getTask(hashID: hashID).unwrap(orThrow: ReadError.doesntExist)
+			parentTask = parentTaskT
+			list = try await getList(id: parentTaskT.listId).unwrap(orThrow: ReadError.doesntExist)
 		}
-		let lastItemOnList = try await getLastTask(on: listID)
 
 		var previousValue: String?
 		while true {
@@ -77,8 +85,9 @@ public struct ListController: Sendable {
 			previousValue = hash.toHexString()
 			let itemHashID = String(hash.toHexString().prefix(Constants.hashIDLength))
 			let create = TaskItem(
-				listId: listID,
+				listId: list.id,
 				prevId: lastItemOnList?.id,
+				subtaskParentId: parentTask?.id,
 				itemHashId: itemHashID,
 				isComplete: false,
 				label: label,
@@ -103,10 +112,16 @@ public struct ListController: Sendable {
 
 				try await db.update(listUpdate)
 			}
+
+			if var parentTask, parentTask.firstSubtaskId == nil {
+				parentTask.firstSubtaskId = new.id
+				try await db.update(parentTask)
+			}
 			return new
 		}
-
 	}
+
+
 
 	// MARK: - Read
 	public func getAllLists() async throws -> [TaskList] {
@@ -121,12 +136,25 @@ public struct ListController: Sendable {
 		try await db.taskLists.find(by: \.slug, slug)
 	}
 
-	public func getAllTasksStream(on listID: TaskList.ID) async throws -> AsyncThrowingStream<(index: Int, task: TaskItem), Error> {
-		let list = try await getList(id: listID)
+	public enum TaskParent {
+		case list(TaskList.ID)
+		case task(hashID: String)
+	}
+	public func getAllTasksStream(on parent: TaskParent) async throws -> AsyncThrowingStream<(index: Int, task: TaskItem), Error> {
+		let firstTaskID = try await {
+			switch parent {
+			case .list(let listID):
+				let list = try await getList(id: listID)
+				return list?.firstTaskId
+			case .task(let hashID):
+				let task = try await getTask(hashID: hashID)
+				return task?.firstSubtaskId
+			}
+		}()
 		let (stream, continuation) = AsyncThrowingStream.makeStream(of: (index: Int, task: TaskItem).self)
 
 		Task {
-			var taskID = list?.firstTaskId
+			var taskID = firstTaskID
 			var currentIndex = 0
 
 			while let currentTaskID = taskID {
@@ -148,10 +176,10 @@ public struct ListController: Sendable {
 		return stream
 	}
 
-	public func getAllTasks(on listID: TaskList.ID) async throws -> [TaskItem] {
+	public func getAllTasks(on taskParent: TaskParent) async throws -> [TaskItem] {
 		var tasks: [TaskItem] = []
 
-		let stream = try await getAllTasksStream(on: listID)
+		let stream = try await getAllTasksStream(on: taskParent)
 
 		for try await (_, task) in stream {
 			tasks.append(task)
@@ -168,10 +196,10 @@ public struct ListController: Sendable {
 		try await db.taskItems.find(id)
 	}
 
-	public func getTask(index: Int, on listID: TaskList.ID) async throws -> TaskItem? {
+	public func getTask(index: Int, on taskParent: TaskParent) async throws -> TaskItem? {
 		guard index >= 0 else { return nil }
 
-		let stream = try await getAllTasksStream(on: listID)
+		let stream = try await getAllTasksStream(on: taskParent)
 
 		// note the stream is known to continue firing after finding a match. this is a future fix
 		for try await (taskIndex, taskItem) in stream {
@@ -182,8 +210,8 @@ public struct ListController: Sendable {
 		return nil
 	}
 
-	public func getLastTask(on listID: TaskList.ID) async throws -> TaskItem? {
-		let stream = try await getAllTasksStream(on: listID)
+	public func getLastTask(on taskParent: TaskParent) async throws -> TaskItem? {
+		let stream = try await getAllTasksStream(on: taskParent)
 
 		var currentTask: TaskItem?
 		for try await (_, task) in stream {

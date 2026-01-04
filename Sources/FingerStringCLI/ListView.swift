@@ -30,11 +30,11 @@ struct ListView: AsyncParsableCommand {
 		print(listOutputBuilder.compactMap(\.self).joined(separator: "\n"))
 		print()
 
-		let itemsStream = try await FingerStringCLI.controller.getAllTasksStream(on: list.id)
+		let itemsStream = try await FingerStringCLI.controller.getAllTasksStream(on: .list(list.id))
 
 		var index = 0
 		for try await (_, task) in itemsStream {
-			printItem(task)
+			try await printItem(task)
 			index += 1
 		}
 
@@ -46,7 +46,7 @@ struct ListView: AsyncParsableCommand {
 	private func printItem(
 		_ item: TaskItem,
 		indent: String = ""
-	) {
+	) async throws {
 		guard
 			item.isComplete == false || showCompletedTasks
 		else { return }
@@ -62,5 +62,12 @@ struct ListView: AsyncParsableCommand {
 			.compactMap(\.self)
 			.joined(separator: " ")
 		print(line)
+
+		guard item.firstSubtaskId != nil else { return }
+		let stream = try await FingerStringCLI.controller.getAllTasksStream(on: .task(hashID: item.itemHashId))
+
+		for try await (_, subtask) in stream {
+			try await printItem(subtask, indent: indent + "\t")
+		}
 	}
 }
