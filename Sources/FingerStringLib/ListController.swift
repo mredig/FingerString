@@ -175,10 +175,6 @@ public struct ListController: Sendable {
 	}
 
 	public func getLastTask(on listID: TaskList.ID) async throws -> TaskItem? {
-		guard
-			let list = try await getList(id: listID)
-		else { return nil }
-
 		let stream = try await getAllTasksStream(on: listID)
 
 		var currentTask: TaskItem?
@@ -268,16 +264,19 @@ public struct ListController: Sendable {
 		var updates: [TaskItem] = []
 		switch (previousTask, nextTask) {
 		case (.some(var previous), .some(var next)):
-			previous.nextId = next.id
-			next.prevId = previous.id
+			// middle of the list
+			previous.setNext(&next)
 			updates = [previous, next]
 		case (nil, nil):
+			// it was the only task on the list
 			try await updateRootTask(nil, on: list.id)
 		case (nil, .some(var next)):
+			// it was the first task on the list
 			try await updateRootTask(next.id, on: list.id)
 			next.prevId = nil
 			updates = [next]
 		case (.some(var previous), nil):
+			// it was the last task on the list
 			previous.nextId = nil
 			updates = [previous]
 		}

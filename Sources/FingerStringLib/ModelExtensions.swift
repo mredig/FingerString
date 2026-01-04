@@ -11,3 +11,10 @@ extension TaskList {
 		title ?? slug
 	}
 }
+
+extension TaskItem {
+	mutating func setNext(_ nextTaskItem: inout TaskItem) {
+		nextId = nextTaskItem.id
+		nextTaskItem.prevId = id
+	}
+}
