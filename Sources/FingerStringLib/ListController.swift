@@ -38,7 +38,7 @@ public struct ListController: Sendable {
 
 	public static func createDB(at location: URL = Constants.defaultDBURL) throws(DBError) {
 		var path = location.path(percentEncoded: false).cString(using: .utf8) ?? []
-		var pointer: OpaquePointer?// = -1
+		var pointer: OpaquePointer?
 		let rc = sqlite3_create_fingerstringdb(
 			&path,
 			Int32(SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE),
@@ -46,6 +46,11 @@ public struct ListController: Sendable {
 
 		guard rc == SQLITE_OK else {
 			throw .cannotCreateDB
+		}
+
+		// Close the temporary connection handle since we'll be using FingerStringDB
+		if let pointer = pointer {
+			sqlite3_close(pointer)
 		}
 
 		let db = FingerStringDB(url: location)
