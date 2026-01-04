@@ -63,9 +63,34 @@ echo -e "${GREEN}8. View list showing all tasks (including completed)${NC}"
 $CMD list-view tasks --show-completed-tasks
 echo
 
-# Test 9: Delete completed task
-echo -e "${GREEN}9. Delete completed task${NC}"
-$CMD task-delete $TASK1_ID --force
+# Test 9: Create second list
+echo -e "${GREEN}9. Create second list${NC}"
+$CMD list-create shopping --title "Shopping List"
+echo
+
+# Test 10: List all lists
+echo -e "${GREEN}10. List all lists${NC}"
+$CMD list-all
+echo
+
+# Test 11: List all lists with descriptions
+echo -e "${GREEN}11. List all lists with descriptions${NC}"
+$CMD list-all --include-descriptions
+echo
+
+# Test 12: Delete first list
+echo -e "${GREEN}12. Delete first list${NC}"
+$CMD list-delete tasks --force
+echo
+
+# Test 13: Delete second list
+echo -e "${GREEN}13. Delete second list${NC}"
+$CMD list-delete shopping --force
+echo
+
+# Test 14: Verify lists are gone
+echo -e "${GREEN}14. Verify all lists deleted${NC}"
+$CMD list-all
 echo
 
 echo -e "${GREEN}=== All tests completed ===${NC}"
