@@ -18,7 +18,7 @@ struct TaskAdd: AsyncParsableCommand {
 	var note: String?
 
 	func run() async throws {
-		let controller = await FingerStringCLI.controller
+		let controller = FingerStringCLI.controller
 
 		let parent: ListController.TaskParent
 		let successTitle: String

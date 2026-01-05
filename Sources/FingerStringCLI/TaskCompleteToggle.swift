@@ -28,7 +28,7 @@ struct TaskCompleteToggle: AsyncParsableCommand {
 	var mark: Bool = true
 
 	func run() async throws {
-		let controller = await FingerStringCLI.controller
+		let controller = FingerStringCLI.controller
 
 		guard
 			let task = try await controller.getTask(hashID: hashID)

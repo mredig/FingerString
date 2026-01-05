@@ -15,7 +15,7 @@ struct TaskView: AsyncParsableCommand {
 	var showCompletedTasks: Bool = false
 
 	func run() async throws {
-		let controller = await FingerStringCLI.controller
+		let controller = FingerStringCLI.controller
 
 		guard
 			let task = try await controller.getTask(hashID: hashID)

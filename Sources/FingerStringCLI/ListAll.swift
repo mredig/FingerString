@@ -12,7 +12,7 @@ struct ListAll: AsyncParsableCommand {
 	var includeDescriptions: Bool = false
 
 	func run() async throws {
-		let controller = await FingerStringCLI.controller
+		let controller = FingerStringCLI.controller
 		let lists = try await controller.getAllLists()
 
 		guard lists.isOccupied else {
