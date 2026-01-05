@@ -257,21 +257,28 @@ public struct ListController: Sendable {
 		return task
 	}
 
-	@discardableResult
 	private func updateRootTask(
 		_ id: TaskItem.ID?,
-		on listID: TaskList.ID
-	) async throws -> (previousID: TaskItem.ID?, list: TaskList) {
-		guard
-			var list = try await getList(id: listID)
-		else { throw ReadError.doesntExist }
+		on taskParent: TaskParent
+	) async throws {
+		switch taskParent {
+		case .list(let listID):
+			guard
+				var list = try await getList(id: listID)
+			else { throw ReadError.doesntExist }
 
-		let old = list.firstTaskId
-		list.firstTaskId = id
+			list.firstTaskId = id
 
-		try await db.update(list)
+			try await db.update(list)
+		case .task(let hashID):
+			guard var task = try await getTask(hashID: hashID) else {
+				throw ReadError.doesntExist
+			}
 
-		return (old, list)
+			task.firstSubtaskId = id
+
+			try await db.update(task)
+		}
 	}
 
 	// MARK: - Delete
@@ -294,31 +301,41 @@ public struct ListController: Sendable {
 			try await db.delete(task)
 		}
 
-		guard let list = try await getList(id: task.listId) else {
-			return try await deletion()
-		}
-
 		let previousTask = try await previousTaskLoad
 		let nextTask = try await nextTaskLoad
 
+		let taskParent = { () async throws -> TaskParent in
+			guard let parentTaskID = task.subtaskParentId else {
+				return .list(task.listId)
+			}
+			let parentTask = try await getTask(id: parentTaskID).unwrap(orThrow: ReadError.doesntExist)
+			return .task(hashID: parentTask.itemHashId)
+		}
+
 		var updates: [TaskItem] = []
-		switch (previousTask, nextTask) {
-		case (.some(var previous), .some(var next)):
-			// middle of the list
-			previous.setNext(&next)
-			updates = [previous, next]
-		case (nil, nil):
-			// it was the only task on the list
-			try await updateRootTask(nil, on: list.id)
-		case (nil, .some(var next)):
-			// it was the first task on the list
-			try await updateRootTask(next.id, on: list.id)
-			next.prevId = nil
-			updates = [next]
-		case (.some(var previous), nil):
-			// it was the last task on the list
-			previous.nextId = nil
-			updates = [previous]
+		do {
+			switch (previousTask, nextTask) {
+			case (.some(var previous), .some(var next)):
+				// middle of the list
+				previous.setNext(&next)
+				updates = [previous, next]
+			case (nil, nil):
+				// it was the only task on the list
+				try await updateRootTask(nil, on: taskParent())
+			case (nil, .some(var next)):
+				// it was the first task on the list
+				try await updateRootTask(next.id, on: taskParent())
+				next.prevId = nil
+				updates = [next]
+			case (.some(var previous), nil):
+				// it was the last task on the list
+				previous.nextId = nil
+				updates = [previous]
+			}
+		} catch {
+			print("Error cleaning up deletion: \(error)")
+			try await deletion()
+			return
 		}
 
 		for update in updates {
