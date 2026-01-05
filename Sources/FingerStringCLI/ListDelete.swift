@@ -15,7 +15,7 @@ struct ListDelete: AsyncParsableCommand {
 	var force: Bool = false
 
 	func run() async throws {
-		let controller = FingerStringCLI.controller
+		let controller = await FingerStringCLI.controller
 
 		guard
 			let list = try await controller.getList(withSlug: slug)

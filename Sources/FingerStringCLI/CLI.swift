@@ -4,7 +4,8 @@ import Foundation
 
 @main
 struct FingerStringCLI: AsyncParsableCommand {
-	static let controller = ListController(db: ListController.defaultDB)
+	@MainActor
+	static private(set) var controller = ListController(db: ListController.defaultDB)
 
 	static let configuration = CommandConfiguration(
 		commandName: "fingerstring",

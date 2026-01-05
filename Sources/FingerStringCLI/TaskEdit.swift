@@ -18,7 +18,7 @@ struct TaskEdit: AsyncParsableCommand {
 	var note: String?
 
 	func run() async throws {
-		let controller = FingerStringCLI.controller
+		let controller = await FingerStringCLI.controller
 
 		guard
 			let task = try await controller.getTask(hashID: hashID)
