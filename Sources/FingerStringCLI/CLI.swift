@@ -22,6 +22,17 @@ struct FingerStringCLI: AsyncParsableCommand {
 			TaskEdit.self,
 			TaskDelete.self,
 			TaskCompleteToggle.self,
-		]
-	)
+		])
+
+	@Option(help: "", transform: { URL(filePath: $0) })
+	var customDB: URL?
+
+	func validate() throws {
+		guard let customDB else { return }
+
+		Self.controllerLock.withLock {
+			let db = FingerStringDB(url: customDB)
+			Self._controller = ListController(db: db)
+		}
+	}
 }
