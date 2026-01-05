@@ -15,6 +15,8 @@ struct FingerStringCLI: AsyncParsableCommand {
 			ListDelete.self,
 			ListAll.self,
 			TaskAdd.self,
+			TaskView.self,
+			TaskEdit.self,
 			TaskDelete.self,
 			TaskCompleteToggle.self,
 		]
