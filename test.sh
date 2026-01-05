@@ -13,6 +13,11 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Clean up old database
+STORE_PATH="${HOME}/.config/FingerString/store.db"
+STORE_PATH_BAK="${HOME}/.config/FingerString/store.db.bak"
+if [[ -e "$STORE_PATH" ]]; then
+	mv "$STORE_PATH" "$STORE_PATH_BAK"
+fi
 rm -f "${HOME}/.config/FingerString/store.db"
 mkdir -p ~/.config/FingerString
 
@@ -31,7 +36,7 @@ echo
 
 # Test 3: Add first task
 echo -e "${GREEN}3. Add first task${NC}"
-TASK1_OUTPUT=$($CMD task-add tasks "Buy groceries")
+TASK1_OUTPUT=$($CMD task-add tasks "Buy groceries" --note "Family is hungry")
 TASK1_ID=$(echo "$TASK1_OUTPUT" | sed -n 's/^Added task: \[\([^]]*\)\].*/\1/p')
 echo "$TASK1_OUTPUT"
 echo
@@ -67,6 +72,31 @@ echo -e "${GREEN}8. View list showing tasks with subtasks${NC}"
 $CMD list-view tasks
 echo
 
+# Test 8a: View individual task
+echo -e "${GREEN}8a. View individual task details${NC}"
+$CMD task-view "$TASK1_ID"
+echo
+
+# Test 8b: Edit task label
+echo -e "${GREEN}8b. Edit task label${NC}"
+$CMD task-edit "$TASK1_ID" --label "Buy groceries and cook dinner"
+echo
+
+# Test 8c: View updated task
+echo -e "${GREEN}8c. View task after label edit${NC}"
+$CMD task-view "$TASK1_ID"
+echo
+
+# Test 8d: Edit task note
+echo -e "${GREEN}8d. Edit task note${NC}"
+$CMD task-edit "$TASK2_ID" --note "Update API docs and fix bugs"
+echo
+
+# Test 8e: View updated task with note
+echo -e "${GREEN}8e. View task after note edit${NC}"
+$CMD task-view "$TASK2_ID"
+echo
+
 # Test 9: Complete one subtask
 echo -e "${GREEN}9. Complete one subtask (Buy milk)${NC}"
 $CMD task-complete "$SUBTASK1_ID"
@@ -75,6 +105,16 @@ echo
 # Test 10: View list after completing subtask
 echo -e "${GREEN}10. View list after completing subtask${NC}"
 $CMD list-view tasks
+echo
+
+# Test 10a: View task with completed subtask (default behavior - hides completed)
+echo -e "${GREEN}10a. View task with completed subtask (hides completed)${NC}"
+$CMD task-view "$TASK1_ID"
+echo
+
+# Test 10b: View task showing all subtasks
+echo -e "${GREEN}10b. View task showing completed subtasks${NC}"
+$CMD task-view "$TASK1_ID" --show-completed-tasks
 echo
 
 # Test 11: Complete the parent task (Buy groceries)
@@ -123,3 +163,9 @@ $CMD list-all
 echo
 
 echo -e "${GREEN}=== All tests completed ===${NC}"
+
+
+if [[ -e "$STORE_PATH_BAK" ]]; then
+	rm "$STORE_PATH"
+	mv "$STORE_PATH_BAK" "$STORE_PATH"
+fi
