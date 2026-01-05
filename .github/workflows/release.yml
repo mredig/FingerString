@@ -19,7 +19,7 @@ jobs:
 
       - name: Build universal binary
         run: |
-          xcodebuild -scheme FingerString -configuration Release -destination 'platform=macOS' ONLY_ACTIVE_ARCH=NO
+          xcodebuild -scheme fingerstring -configuration Release -destination 'platform=macOS' ONLY_ACTIVE_ARCH=NO
           DERIVED_DATA=$(find ~/Library/Developer/Xcode/DerivedData -name "FingerString-*" -type d -maxdepth 1 | head -1)
           mkdir -p ./build
           cp "$DERIVED_DATA/Build/Products/Release/fingerstring" ./build/fingerstring
@@ -51,12 +51,12 @@ jobs:
         run: |
           swift build -c release
 
-      - name: Create tarball
+      - name: Create tarball and SHA256
         run: |
           BUILD_DIR=$(swift build -c release --show-bin-path)
           cd $BUILD_DIR
           tar -czf fingerstring-linux.tar.gz fingerstring
-          shasum -a 256 fingerstring-linux.tar.gz > fingerstring-linux.tar.gz.sha256
+          shasum -a 256 fingerstring-linux.tar.gz | tee fingerstring-linux.tar.gz.sha256
           mv fingerstring-linux.tar.gz $GITHUB_WORKSPACE/
           mv fingerstring-linux.tar.gz.sha256 $GITHUB_WORKSPACE/
 
