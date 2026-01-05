@@ -14,6 +14,9 @@ struct ListView: AsyncParsableCommand {
 	@Flag
 	var showCompletedTasks: Bool = false
 
+	@Flag
+	var showNotes: Bool = false
+
 	func run() async throws {
 		guard
 			let list = try await FingerStringCLI.controller.getList(withSlug: slug)
@@ -51,11 +54,20 @@ struct ListView: AsyncParsableCommand {
 			item.isComplete == false || showCompletedTasks
 		else { return }
 
-		let lineBuilder = [
+		let note: String? = {
+			guard let note = item.note else { return nil }
+			if showNotes {
+				return "\n\(note.prefixingLines(with: indent + "\t"))"
+			} else {
+				return "(*)"
+			}
+		}()
+
+		let lineBuilder: [String?] = [
 			["[", item.isComplete ? "x" : " ", "]"].joined(),
 			"[\(item.itemHashId)]",
 			"\(item.label)",
-			item.note != nil ? "(*)" : nil
+			note
 		]
 
 		let line = indent + lineBuilder
