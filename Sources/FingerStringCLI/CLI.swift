@@ -30,9 +30,8 @@ struct FingerStringCLI: AsyncParsableCommand {
 	func validate() throws {
 		guard let customDB else { return }
 
-		Self.controllerLock.withLock {
-			let db = FingerStringDB(url: customDB)
-			Self._controller = ListController(db: db)
+		try Self.controllerLock.withLock {
+			Self._controller = try ListController(dbLocation: customDB)
 		}
 	}
 }

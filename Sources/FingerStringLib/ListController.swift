@@ -15,15 +15,19 @@ public struct ListController: Sendable {
 
 	let db: FingerStringDB
 
-	public init(db: FingerStringDB) {
+	public init(dbLocation: URL, readOnly: Bool = false) throws {
 		try? FileManager.default.createDirectory(
-			at: Constants.defaultDBURL.deletingLastPathComponent(),
+			at: dbLocation.deletingLastPathComponent(),
 			withIntermediateDirectories: true)
 
-		if Constants.defaultDBURL.checkResourceIsAccessible() == false {
-			try? Self.createDB()
+		if dbLocation.checkResourceIsAccessible() == false {
+			try Self.createDB(at: dbLocation)
 		}
 
+		self.init(db: FingerStringDB(url: dbLocation, readOnly: readOnly))
+	}
+
+	public init(db: FingerStringDB) {
 		self.db = db
 
 		do {
