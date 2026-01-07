@@ -47,10 +47,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Import Swift GPG keys
+        run: |
+          curl -s https://www.swift.org/keys/all-keys.asc | gpg --import -
+
       - name: Setup Swift with Swiftly
         uses: swift-actions/setup-swift@v3
-        with:
-          skip-verify-signature: true
 
       - name: Install Static Linux Swift SDK
         run: |
