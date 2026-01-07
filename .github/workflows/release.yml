@@ -54,6 +54,8 @@ jobs:
 
       - name: Setup Swift with Swiftly
         uses: swift-actions/setup-swift@v3
+        with:
+          swift-version: "6.2.3"
 
       - name: Install Static Linux Swift SDK
         run: |
