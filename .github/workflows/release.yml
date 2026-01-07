@@ -47,10 +47,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Swift
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: "latest"
+      - name: Setup Swift with Swiftly
+        uses: swift-actions/setup-swift@v3
 
       - name: Install Static Linux Swift SDK
         run: |
@@ -59,7 +57,7 @@ jobs:
 
       - name: Build for Linux with Static SDK
         run: |
-          swift build -c release --swift-sdk x86_64-swift-linux-musl -Xswiftc -static-executable
+          swift build -c release --swift-sdk x86_64-swift-linux-musl
 
       - name: Create tarball and SHA256
         run: |
