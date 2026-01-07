@@ -49,7 +49,8 @@ jobs:
 
       - name: Import Swift GPG keys
         run: |
-          curl -s https://www.swift.org/keys/all-keys.asc | gpg --import -
+          wget -q -O - https://swift.org/keys/automatic-signing-key-4.asc | gpg --import -
+          wget -q -O - https://swift.org/keys/release-key-swift-6.x.asc | gpg --import -
 
       - name: Setup Swift with Swiftly
         uses: swift-actions/setup-swift@v3
