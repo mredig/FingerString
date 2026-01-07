@@ -49,6 +49,8 @@ jobs:
 
       - name: Setup Swift with Swiftly
         uses: swift-actions/setup-swift@v3
+        with:
+          skip-verify-signature: true
 
       - name: Install Static Linux Swift SDK
         run: |
