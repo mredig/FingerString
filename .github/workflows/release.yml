@@ -3,8 +3,8 @@ name: Build and Release
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
-      - '[0-9]+.[0-9]+.[0-9]+b[0-9]+'
+      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+b[0-9]+"
 
 permissions:
   contents: write
@@ -47,13 +47,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build for Linux
+      - name: Install Swiftly
         run: |
-          swift build -c release
+          curl -L https://swift-server.github.io/swiftly/swiftly-install.sh | bash -s -- -y
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install Static Linux Swift SDK
+        run: |
+          source ~/.local/share/swiftly/env.sh
+          swiftly install latest
+          SWIFT_VERSION=$(swiftly use latest 2>&1 | grep -oP '\d+\.\d+(\.\d+)?' | head -1)
+          swift sdk install https://download.swift.org/swift-${SWIFT_VERSION}-release/static-sdk/swift-${SWIFT_VERSION}-RELEASE/swift-${SWIFT_VERSION}-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz
+
+      - name: Build for Linux with Static SDK
+        run: |
+          source ~/.local/share/swiftly/env.sh
+          swift build -c release --swift-sdk x86_64-swift-linux-musl -Xswiftc -static-executable
 
       - name: Create tarball and SHA256
         run: |
-          BUILD_DIR=$(swift build -c release --show-bin-path)
+          BUILD_DIR=$(swift build -c release --swift-sdk x86_64-swift-linux-musl --show-bin-path)
           cd $BUILD_DIR
           tar -czf fingerstring-linux.tar.gz fingerstring
           shasum -a 256 fingerstring-linux.tar.gz | tee fingerstring-linux.tar.gz.sha256
