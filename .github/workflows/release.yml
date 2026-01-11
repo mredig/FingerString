@@ -44,19 +44,23 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
 
+    container: "swift:6.2.3-noble"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Import Swift GPG keys
-        run: |
-          wget -q -O - https://swift.org/keys/automatic-signing-key-4.asc | gpg --import -
-          wget -q -O - https://swift.org/keys/release-key-swift-6.x.asc | gpg --import -
+      # - name: Import Swift GPG keys
+      #   run: |
+      #     wget -q -O - https://swift.org/keys/automatic-signing-key-4.asc | gpg --import -
+      #     wget -q -O - https://swift.org/keys/release-key-swift-6.x.asc | gpg --import -
 
-      - name: Setup Swift with Swiftly
-        uses: swift-actions/setup-swift@v3
-        with:
-          swift-version: "6.2.3"
+      # - name: Setup Swift with Swiftly
+      #   uses: swift-actions/setup-swift@v3
+      #   with:
+      #     swift-version: "6.2.3"
+      - name: Show Swift Version
+        run: swift --version
 
       - name: Install Static Linux Swift SDK
         run: |
