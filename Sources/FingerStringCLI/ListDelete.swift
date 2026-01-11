@@ -25,7 +25,7 @@ struct ListDelete: AsyncParsableCommand {
 		}
 
 		if force == false {
-			print("Delete list '\(list.inlineTitle)'? (yes/no)")
+			print("Delete list '\(list.inlineTitle)'? [y/N]")
 			guard
 				let input = readLine(),
 				input.lowercased() == "y"
