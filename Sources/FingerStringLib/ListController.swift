@@ -10,7 +10,15 @@ import SQLite3
 public struct ListController: Sendable {
 
 	public static let defaultDB: FingerStringDB = {
-		FingerStringDB(url: Constants.defaultDBURL)
+		let dbLocation = Constants.defaultDBURL
+		if dbLocation.checkResourceIsAccessible() == false {
+			do {
+				try Self.createDB(at: dbLocation)
+			} catch {
+				print("Error creating new db at \(dbLocation.path(percentEncoded: false)): \(error)")
+			}
+		}
+		return FingerStringDB(url: dbLocation)
 	}()
 
 	let db: FingerStringDB
