@@ -1,5 +1,5 @@
 {
-  "originHash" : "64f2fd48b6ef27ae28da14a093ce451ceb7b467d12402acf59b7de17340dc3ef",
+  "originHash" : "e521e583f25690c8bba57ef1a2b17a07e8652d8b7c7aea01ffb8181f48a7ce57",
   "pins" : [
     {
       "identity" : "lighter",
@@ -20,12 +20,30 @@
       }
     },
     {
+      "identity" : "swift-asn1",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-asn1.git",
+      "state" : {
+        "revision" : "810496cf121e525d660cd0ea89a758740476b85f",
+        "version" : "1.5.1"
+      }
+    },
+    {
+      "identity" : "swift-crypto",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-crypto.git",
+      "state" : {
+        "revision" : "95ba0316a9b733e92bb6b071255ff46263bbe7dc",
+        "version" : "3.15.1"
+      }
+    },
+    {
       "identity" : "swiftpizzasnips",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mredig/SwiftPizzaSnips.git",
       "state" : {
-        "revision" : "4c37a61bf37834d7dd055c389b4f7607c6f7fdac",
-        "version" : "0.4.38"
+        "revision" : "64b0104dd5b657b4e6f12248a0c8fd7397ea7204",
+        "version" : "0.5.0"
       }
     }
   ],

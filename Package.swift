@@ -26,7 +26,7 @@ let package = Package(
 		),
 		.package(
 			url: "https://github.com/mredig/SwiftPizzaSnips.git",
-			from: "0.4.38"
+			from: "0.5.0"
 		),
 		.package(
 			url: "https://github.com/apple/swift-argument-parser.git",
