@@ -11,7 +11,7 @@ struct FingerStringCLI: AsyncParsableCommand {
 
 	static let configuration = CommandConfiguration(
 		commandName: "fingerstring",
-		abstract: "A task list management tool",
+		abstract: "A task list management tool. See README for bash completion setup: https://github.com/mredig/fingerstring#bash-completion-setup",
 		subcommands: [
 			ListCreate.self,
 			ListView.self,

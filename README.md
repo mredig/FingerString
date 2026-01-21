@@ -27,6 +27,30 @@ fingerstring task-add tasks "Buy groceries"
 fingerstring list-view tasks
 ```
 
+## Bash Completion Setup
+
+Enable tab completion for commands, subcommands, and arguments.
+
+**If you have `bash-completion` installed:**
+```bash
+mkdir -p ~/.local/share/bash-completion/completions
+fingerstring --generate-completion-script bash > ~/.local/share/bash-completion/completions/fingerstring
+```
+
+**If you don't have `bash-completion`:**
+```bash
+# Generate the completion script in the standard location
+mkdir -p ~/.local/share/bash-completion/completions
+fingerstring --generate-completion-script bash > ~/.local/share/bash-completion/completions/fingerstring
+
+# Add to your shell profile (choose the file that exists on your system)
+echo 'source ~/.local/share/bash-completion/completions/fingerstring' >> ~/.bash_profile  # or ~/.bashrc
+```
+
+Then restart your shell or run `source ~/.bash_profile` (or `~/.bashrc`).
+
+**For other shells (zsh, fish):** See the [Swift Argument Parser documentation](https://apple.github.io/swift-argument-parser/documentation/argumentparser/installingcompletionscripts#Installing-Zsh-Completions).
+
 ## Available Commands
 
 ### List Management
