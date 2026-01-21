@@ -2,6 +2,13 @@ import ArgumentParser
 import FingerStringLib
 import Foundation
 
+extension FingerStringCLI {
+	struct Options: ParsableArguments {
+		@Flag(name: .shortAndLong, help: "Show the version number")
+		var version = false
+	}
+}
+
 @main
 struct FingerStringCLI: AsyncParsableCommand {
 	nonisolated(unsafe)
@@ -24,10 +31,17 @@ struct FingerStringCLI: AsyncParsableCommand {
 			TaskCompleteToggle.self,
 		])
 
+	@OptionGroup var options: Options
+	
 	@Option(help: "", transform: { URL(filePath: $0) })
 	var customDB: URL?
 
 	func validate() throws {
+		if options.version {
+			print(version)
+			throw ExitCode.success
+		}
+		
 		guard let customDB else { return }
 
 		try Self.controllerLock.withLock {

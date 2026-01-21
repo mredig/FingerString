@@ -17,6 +17,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Update version from git tag
+        run: ./.github/scripts/update-version.sh
+
       - name: Build universal binary
         run: |
           xcodebuild -scheme fingerstring -configuration Release -destination 'platform=macOS' ONLY_ACTIVE_ARCH=NO
@@ -48,6 +51,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Update version from git tag
+        run: ./.github/scripts/update-version.sh
 
       - name: Install Dependencies
         run: |
