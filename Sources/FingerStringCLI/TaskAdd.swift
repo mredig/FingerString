@@ -8,7 +8,25 @@ struct TaskAdd: AsyncParsableCommand {
 		abstract: "Add an task to a list"
 	)
 
-	@Argument(help: "Slug of the target list or hash id of the parent task")
+	@Argument(help: "Slug of the target list or hash id of the parent task", completion: .custom({ _, _, prefix in
+		do {
+			let lcPrefix = prefix.lowercased()
+			let lists = try await FingerStringCLI.controller.getAllLists()
+			guard lists.isOccupied else {
+				return []
+			}
+
+			let matchingLists = lists.map(\.slug).filter { $0.hasPrefix(lcPrefix) }
+			guard matchingLists.isEmpty else { return matchingLists }
+			// no matching lists, it might be a hash id
+
+			let tasks = try await FingerStringCLI.controller.getAllTasks()
+			return tasks.map(\.itemHashId).filter { $0.hasPrefix(lcPrefix) }
+		} catch {
+			print("Error: \(error)")
+			return []
+		}
+	}))
 	var query: String
 
 	@Argument(help: "Label for the task")

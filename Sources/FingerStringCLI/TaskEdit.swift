@@ -8,7 +8,16 @@ struct TaskEdit: AsyncParsableCommand {
 		abstract: "Edit a task's label or note"
 	)
 
-	@Argument(help: "Hash ID of the task to edit")
+	@Argument(help: "Hash ID of the task to edit", completion: .custom({ _, _, prefix in
+		let lcPrefix = prefix.lowercased()
+		do {
+			let tasks = try await FingerStringCLI.controller.getAllTasks()
+			return tasks.map(\.itemHashId).filter { $0.hasPrefix(lcPrefix) }
+		} catch {
+			print("Error: \(error)")
+			return []
+		}
+	}))
 	var hashID: String
 
 	@Option(help: "New label for the task")

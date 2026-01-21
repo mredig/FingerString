@@ -8,7 +8,20 @@ struct ListView: AsyncParsableCommand {
 		abstract: "View a list and its items"
 	)
 
-	@Argument(help: "Slug of the list to view")
+	@Argument(help: "Slug of the list to view", completion: .custom({ _, _, prefix in
+		do {
+			let lists = try await FingerStringCLI.controller.getAllLists()
+			guard lists.isOccupied else {
+				print("No lists with prefix \(prefix)")
+				return []
+			}
+
+			return lists.filter { $0.slug.hasPrefix(prefix) }.map(\.slug)
+		} catch {
+			print("Error: \(error)")
+			return []
+		}
+	}))
 	var slug: String
 
 	@Flag

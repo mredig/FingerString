@@ -8,7 +8,16 @@ struct TaskView: AsyncParsableCommand {
 		abstract: "View details of a task including subtasks"
 	)
 
-	@Argument(help: "Hash ID of the task to view")
+	@Argument(help: "Hash ID of the task to view", completion: .custom({ _, _, prefix in
+		let lcPrefix = prefix.lowercased()
+		do {
+			let tasks = try await FingerStringCLI.controller.getAllTasks()
+			return tasks.map(\.itemHashId).filter { $0.hasPrefix(lcPrefix) }
+		} catch {
+			print("Error: \(error)")
+			return []
+		}
+	}))
 	var hashID: String
 
 	@Flag(help: "Show completed subtasks")

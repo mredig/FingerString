@@ -148,6 +148,10 @@ public struct ListController: Sendable {
 		try await db.taskLists.find(by: \.slug, slug)
 	}
 
+	public func getAllTasks() async throws -> [TaskItem] {
+		try await db.taskItems.fetch()
+	}
+
 	public enum TaskParent {
 		case list(TaskList.ID)
 		case task(hashID: String)
