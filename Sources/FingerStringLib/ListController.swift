@@ -52,6 +52,18 @@ public struct ListController: Sendable {
 	}
 
 	public static func createDB(at location: URL = Constants.defaultDBURL) throws(DBError) {
+		guard location.isFileURL else { throw .notFileURL }
+		guard location.pathExtension == "db" else { throw .dbFileMustHaveDBExtension }
+
+		let parentDirectory = location.deletingLastPathComponent()
+
+		do {
+			try FileManager.default.createDirectory(at: parentDirectory, withIntermediateDirectories: true)
+		} catch {
+			print("Error creating db parent directory: \(error)")
+			throw .cannotCreateDB
+		}
+
 		var path = location.path(percentEncoded: false).cString(using: .utf8) ?? []
 		var pointer: OpaquePointer?
 		let rc = sqlite3_create_fingerstringdb(
@@ -373,6 +385,8 @@ public struct ListController: Sendable {
 	}
 
 	public enum DBError: Error {
+		case notFileURL
 		case cannotCreateDB
+		case dbFileMustHaveDBExtension
 	}
 }
