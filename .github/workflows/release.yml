@@ -63,7 +63,7 @@ jobs:
       - name: Install AlpineManifestReader
         run: |
           # Download and install AlpineManifestReader (Linux static build) so we can parse APKINDEX
-          curl -sL https://github.com/mredig/AlpineManifestReader/releases/latest/download/alpineManifestReader-linux.tar.gz | tar xz
+          wget -qO- https://github.com/mredig/AlpineManifestReader/releases/latest/download/alpineManifestReader-linux.tar.gz | tar xz
           mv AlpineManifestReader /usr/local/bin/AlpineManifestReader
           AlpineManifestReader --help >/dev/null
 
