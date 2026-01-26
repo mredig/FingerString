@@ -12,7 +12,7 @@ extension FingerStringCLI {
 @main
 struct FingerStringCLI: AsyncParsableCommand {
 	nonisolated(unsafe)
-	static private var _controller = ListController(db: ListController.defaultDB)
+	static private var _controller = try! ListController(dbLocation: Constants.defaultDBURL, readOnly: false)
 	static var controller: ListController { controllerLock.withLock { _controller } }
 	private static let controllerLock = NSLock()
 

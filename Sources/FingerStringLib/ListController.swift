@@ -8,19 +8,6 @@ import SwiftPizzaSnips
 import SQLite3
 
 public struct ListController: Sendable {
-
-	public static let defaultDB: FingerStringDB = {
-		let dbLocation = Constants.defaultDBURL
-		if dbLocation.checkResourceIsAccessible() == false {
-			do {
-				try Self.createDB(at: dbLocation)
-			} catch {
-				print("Error creating new db at \(dbLocation.path(percentEncoded: false)): \(error)")
-			}
-		}
-		return FingerStringDB(url: dbLocation)
-	}()
-
 	let db: FingerStringDB
 
 	public init(dbLocation: URL, readOnly: Bool = false) throws {
