@@ -64,6 +64,7 @@ Then restart your shell or run `source ~/.bash_profile` (or `~/.bashrc`).
 - **`task-view`** - View task details with subtasks
 - **`task-edit`** - Edit task label or note
 - **`task-delete`** - Delete a task
+- **`task-move`** - Move a task (and its subtasks) to a list or under another task
 - **`task-complete`** - Mark task complete/incomplete
 
 ## Usage Examples
@@ -92,6 +93,16 @@ fingerstring task-view abc12 --show-completed
 ```bash
 fingerstring task-edit abc12 --label "Updated label"
 fingerstring task-edit abc12 --note "Updated note"
+```
+
+**Move a task to another list (or out of a parent, back onto a list):**
+```bash
+fingerstring task-move abc12 personal
+```
+
+**Move a task under another task (subtasks come along):**
+```bash
+fingerstring task-move abc12 def34
 ```
 
 **Mark complete:**
