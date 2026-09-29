@@ -61,7 +61,10 @@ let package = Package(
 		),
 		.testTarget(
 			name: "FingerStringTests",
-			dependencies: ["FingerStringLib"]
+			dependencies: [
+				"FingerStringLib",
+				.product(name: "Lighter", package: "Lighter"),
+			]
 		),
 	]
 )
