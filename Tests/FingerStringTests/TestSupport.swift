@@ -1,7 +1,7 @@
 import Foundation
 import Lighter
 import SQLite3
-@testable import FingerStringLib
+import FingerStringLib
 
 enum TestSupport {
 	/// Creates a `ListController` backed by a fresh, private in-memory SQLite database.

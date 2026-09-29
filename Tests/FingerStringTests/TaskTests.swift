@@ -1,5 +1,5 @@
 import Testing
-@testable import FingerStringLib
+import FingerStringLib
 
 @Suite struct TaskTests {
 	// MARK: - Create

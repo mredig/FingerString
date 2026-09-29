@@ -1,4 +1,5 @@
-@testable import FingerStringLib
+import FingerStringLib
+import Testing
 
 extension ListController {
 	@discardableResult
@@ -23,7 +24,7 @@ extension ListController {
 	/// - every task that belongs to `parent` is reachable, and nothing else is in the chain
 	///
 	/// Walks the chain itself instead of using the task stream, so a broken chain reports instead of hanging or throwing.
-	func chainProblems(on parent: TaskParent) async throws -> [String] {
+	func chainProblems(on parent: TaskParent, sourceLocation: SourceLocation) async throws {
 		let all = try await getAllTasks()
 		let head: TaskItem.ID?
 		let expected: Set<TaskItem.ID>
@@ -31,32 +32,37 @@ extension ListController {
 
 		switch parent {
 		case .list(let id):
-			guard let list = try await getList(id: id) else { return ["list \(id) is missing"] }
+			guard let list = try await getList(id: id) else {
+				Issue.record("list \(id) is missing", severity: .error, sourceLocation: sourceLocation)
+				return
+			}
 			head = list.firstTaskId
 			expected = Set(all.filter { $0.listId == id && $0.subtaskParentId == nil }.map(\.id))
 			name = "list '\(list.slug)'"
 		case .task(let hashID):
-			guard let task = try await getTask(hashID: hashID) else { return ["task \(hashID) is missing"] }
+			guard let task = try await getTask(hashID: hashID) else {
+				Issue.record("task \(hashID) is missing", severity: .error, sourceLocation: sourceLocation)
+				return
+			}
 			head = task.firstSubtaskId
 			expected = Set(all.filter { $0.subtaskParentId == task.id }.map(\.id))
 			name = "subtasks of '\(task.label)'"
 		}
 
-		var problems: [String] = []
 		var visited: [TaskItem.ID] = []
 		var previousID: TaskItem.ID?
 		var currentID = head
 		while let id = currentID {
 			guard visited.contains(id) == false else {
-				problems.append("\(name): chain loops back to id \(id)")
+				Issue.record("\(name): chain loops back to id \(id)", severity: .error, sourceLocation: sourceLocation)
 				break
 			}
 			guard let task = try await getTask(id: id) else {
-				problems.append("\(name): pointer to missing id \(id)")
+				Issue.record("\(name): pointer to missing id \(id)", severity: .error, sourceLocation: sourceLocation)
 				break
 			}
 			if task.prevId != previousID {
-				problems.append("\(name): '\(task.label)' has prevId \(String(describing: task.prevId)), expected \(String(describing: previousID))")
+				Issue.record("\(name): '\(task.label)' has prevId \(task.prevId), expected \(previousID)", severity: .error, sourceLocation: sourceLocation)
 			}
 			visited.append(id)
 			previousID = id
@@ -65,21 +71,20 @@ extension ListController {
 
 		let unreachable = expected.subtracting(visited)
 		if unreachable.isEmpty == false {
-			problems.append("\(name): unreachable ids \(unreachable.sorted())")
+			Issue.record("\(name): unreachable ids \(unreachable.sorted())", severity: .error, sourceLocation: sourceLocation)
 		}
 		let foreign = Set(visited).subtracting(expected)
 		if foreign.isEmpty == false {
-			problems.append("\(name): chain includes ids that belong elsewhere \(foreign.sorted())")
+			Issue.record("\(name): chain includes ids that belong elsewhere \(foreign.sorted())", severity: .error, sourceLocation: sourceLocation)
 		}
-		return problems
 	}
 
 	/// `chainProblems` for the list itself and for every task's subtask chain.
-	func integrityProblems(inList listID: TaskList.ID) async throws -> [String] {
-		var problems = try await chainProblems(on: .list(listID))
+	func integrityProblems(inList listID: TaskList.ID, fileID: String = #fileID, filePath: String = #filePath, line: Int = #line, column: Int = #column) async throws {
+		let sourceLocation = SourceLocation(fileID: fileID, filePath: filePath, line: line, column: column)
+		try await chainProblems(on: .list(listID), sourceLocation: sourceLocation)
 		for task in try await getAllTasks() where task.listId == listID {
-			problems += try await chainProblems(on: .task(hashID: task.itemHashId))
+			try await chainProblems(on: .task(hashID: task.itemHashId), sourceLocation: sourceLocation)
 		}
-		return problems
 	}
 }

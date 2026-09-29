@@ -1,5 +1,5 @@
 import Testing
-@testable import FingerStringLib
+import FingerStringLib
 
 // Recreates `bug.sh` (a list with completed tasks, several parents with subtasks, then deleting every
 // subtask of one parent and adding new tasks afterwards) as library-level tests.
@@ -120,7 +120,7 @@ private let integrationOutline = [
 
 		#expect(try await controller.getList(id: fixture.list.id)?.firstTaskId == fixture.documentation.id)
 		#expect(try await controller.getAllTasks(on: fixture.listParent).count == 6)
-		#expect(try await controller.integrityProblems(inList: fixture.list.id) == [])
+		try await controller.integrityProblems(inList: fixture.list.id)
 	}
 
 	@Test func listViewHidesCompletedTasks() async throws {
@@ -168,7 +168,7 @@ private let integrationOutline = [
 			"Regenerate undocumented symbols list",
 		])
 		#expect(try await controller.getTask(id: fixture.reminders.id)?.firstSubtaskId == fixture.reminderSubtasks[1].id)
-		#expect(try await controller.integrityProblems(inList: fixture.list.id) == [])
+		try await controller.integrityProblems(inList: fixture.list.id)
 	}
 
 	@Test func deleteFirstSubtaskTwiceInARow() async throws {
@@ -182,7 +182,7 @@ private let integrationOutline = [
 		#expect(try await controller.labels(on: remindersParent) == ["Regenerate undocumented symbols list"])
 		#expect(try await controller.getTask(id: fixture.reminders.id)?.firstSubtaskId == fixture.reminderSubtasks[2].id)
 		#expect(try await controller.getTask(id: fixture.reminderSubtasks[2].id)?.prevId == nil)
-		#expect(try await controller.integrityProblems(inList: fixture.list.id) == [])
+		try await controller.integrityProblems(inList: fixture.list.id)
 	}
 
 	@Test func deleteEverySubtaskLeavesParentEmpty() async throws {
@@ -197,7 +197,7 @@ private let integrationOutline = [
 		#expect(try await controller.getAllTasks(on: remindersParent).isEmpty)
 		#expect(try await controller.getTask(id: fixture.reminders.id)?.firstSubtaskId == nil)
 		#expect(try await controller.getTask(id: fixture.reminders.id) != nil)
-		#expect(try await controller.integrityProblems(inList: fixture.list.id) == [])
+		try await controller.integrityProblems(inList: fixture.list.id)
 	}
 
 	@Test func deletingSubtasksDoesNotTouchOtherParents() async throws {
@@ -225,7 +225,7 @@ private let integrationOutline = [
 
 		#expect(try await controller.labels(on: remindersParent) == ["fresh"])
 		#expect(try await controller.getTask(id: fixture.reminders.id)?.firstSubtaskId == fresh.id)
-		#expect(try await controller.integrityProblems(inList: fixture.list.id) == [])
+		try await controller.integrityProblems(inList: fixture.list.id)
 	}
 
 	@Test func newTopLevelTaskAfterSubtaskDeletionsJoinsTheEnd() async throws {
@@ -240,7 +240,7 @@ private let integrationOutline = [
 		#expect(try await controller.getLastTask(on: fixture.listParent)?.id == integration.id)
 		#expect(try await controller.getTask(id: fixture.reminders.id)?.nextId == integration.id)
 		#expect(integration.prevId == fixture.reminders.id)
-		#expect(try await controller.integrityProblems(inList: fixture.list.id) == [])
+		try await controller.integrityProblems(inList: fixture.list.id)
 	}
 
 	@Test func newParentWithFiveSubtasksAfterDeletions() async throws {
@@ -262,7 +262,7 @@ private let integrationOutline = [
 		}
 
 		#expect(try await controller.outline(on: .task(hashID: integration.itemHashId)).count == 5)
-		#expect(try await controller.integrityProblems(inList: fixture.list.id) == [])
+		try await controller.integrityProblems(inList: fixture.list.id)
 	}
 
 	// MARK: - Mega test
@@ -273,7 +273,7 @@ private let integrationOutline = [
 		// 1. Create list
 		let list = try await controller.createList(with: "zion-project", friendlyTitle: "zion-project", description: "zion-project")
 		let listParent = ListController.TaskParent.list(list.id)
-		#expect(try await controller.integrityProblems(inList: list.id) == [])
+		try await controller.integrityProblems(inList: list.id)
 
 		// 2-5. Two tasks, each marked complete
 		let task1 = try await controller.addTask("Documentation (COMPLETE)", to: listParent)
@@ -281,7 +281,7 @@ private let integrationOutline = [
 		let task2 = try await controller.addTask("Testing (COMPLETE)", to: listParent)
 		try await controller.updateTask(id: task2.id, isCompleted: .change(true))
 		#expect(try await controller.outline(on: listParent).isEmpty)
-		#expect(try await controller.integrityProblems(inList: list.id) == [])
+		try await controller.integrityProblems(inList: list.id)
 
 		// 6-9. Media Support with three subtasks
 		let task3 = try await controller.addTask("Priority 4: Media Support", to: listParent)
@@ -315,7 +315,7 @@ private let integrationOutline = [
 		]
 		let additionalOutline = ["Priorities 6-10: Additional Features"]
 		#expect(try await controller.outline(on: listParent) == mediaOutline + notificationsOutline + additionalOutline + remindersOutline)
-		#expect(try await controller.integrityProblems(inList: list.id) == [])
+		try await controller.integrityProblems(inList: list.id)
 
 		// 19. Delete first subtask of Reminders
 		try await controller.deleteTask(subtask1.id)
@@ -324,7 +324,7 @@ private let integrationOutline = [
 			"\tReview Rust SDK naming/architecture infractions",
 			"\tRegenerate undocumented symbols list",
 		])
-		#expect(try await controller.integrityProblems(inList: list.id) == [])
+		try await controller.integrityProblems(inList: list.id)
 
 		// 20. Delete the (new) first subtask
 		try await controller.deleteTask(subtask2.id)
@@ -332,7 +332,7 @@ private let integrationOutline = [
 			"Reminders & Outstanding Items",
 			"\tRegenerate undocumented symbols list",
 		])
-		#expect(try await controller.integrityProblems(inList: list.id) == [])
+		try await controller.integrityProblems(inList: list.id)
 
 		// 21. Delete the last remaining subtask
 		try await controller.deleteTask(subtask3.id)
@@ -340,7 +340,7 @@ private let integrationOutline = [
 			"Reminders & Outstanding Items",
 		])
 		#expect(try await controller.getTask(id: task5.id)?.firstSubtaskId == nil)
-		#expect(try await controller.integrityProblems(inList: list.id) == [])
+		try await controller.integrityProblems(inList: list.id)
 
 		// 22-27. New top-level task with five subtasks
 		let task6 = try await controller.addTask("Integrate Zion into Element X main app", to: listParent)
@@ -358,6 +358,6 @@ private let integrationOutline = [
 		#expect(try await controller.getAllTasks(on: listParent).count == 7)
 		// 7 top-level tasks + 3 (media) + 2 (notifications) + 0 (reminders) + 5 (integration) subtasks
 		#expect(try await controller.getAllTasks().count == 17)
-		#expect(try await controller.integrityProblems(inList: list.id) == [])
+		try await controller.integrityProblems(inList: list.id)
 	}
 }
