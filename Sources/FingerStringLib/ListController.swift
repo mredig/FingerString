@@ -168,11 +168,15 @@ public struct ListController: Sendable {
 		}()
 		let (stream, continuation) = AsyncThrowingStream.makeStream(of: (index: Int, task: TaskItem).self)
 
-		Task {
+		let streamTask = Task {
 			var taskID = firstTaskID
 			var currentIndex = 0
 
 			while let currentTaskID = taskID {
+				guard Task.isCancelled == false else {
+					continuation.finish()
+					return
+				}
 				defer { currentIndex += 1 }
 				do {
 					guard
@@ -186,6 +190,10 @@ public struct ListController: Sendable {
 				}
 			}
 			continuation.finish()
+		}
+
+		continuation.onTermination = { _ in
+			streamTask.cancel()
 		}
 
 		return stream
