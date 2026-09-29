@@ -292,6 +292,189 @@ public struct ListController: Sendable {
 		}
 	}
 
+	/// Removes a task from it's location in the linked list. The previous/next/supertask/list will all lose/bypass any references to this task.
+	/// The task itself retains all original references to original tasks as if it weren't removed at all. It will simply be an island node in the linked list.
+	private func detachTask(_ task: TaskItem) async throws {
+		async let oldNextTaskLoad: TaskItem? = {
+			guard let nextID = task.nextId else { return nil }
+			return try await getTask(id: nextID)
+		}()
+		async let oldPreviousTaskLoad: TaskItem? = {
+			guard let previousID = task.prevId else { return nil }
+			return try await getTask(id: previousID)
+		}()
+		async let oldParentListLoad = {
+			let oldParentListID = task.listId
+			return try await getList(id: oldParentListID)
+		}()
+		async let oldSuperTaskLoad: TaskItem? = {
+			guard let subtaskParentID = task.subtaskParentId else { return nil }
+			return try await getTask(id: subtaskParentID)
+		}()
+
+		var oldNextTask = try await oldNextTaskLoad
+		oldNextTask?.prevId = task.prevId
+
+		var oldPreviousTask = try await oldPreviousTaskLoad
+		oldPreviousTask?.nextId = task.nextId
+
+		var oldParentList = try await oldParentListLoad
+		if oldParentList?.firstTaskId == task.id {
+			oldParentList?.firstTaskId = oldNextTask?.id
+		}
+
+		var oldSuperTask = try await oldSuperTaskLoad
+		if oldSuperTask?.firstSubtaskId == task.id {
+			oldSuperTask?.firstSubtaskId = task.nextId
+		}
+
+		try await db.transaction { [oldNextTask, oldPreviousTask, oldParentList, oldSuperTask] trans in
+			try oldNextTask.map { try trans.update($0) }
+			try oldPreviousTask.map { try trans.update($0) }
+			try oldParentList.map { try trans.update($0) }
+			try oldSuperTask.map { try trans.update($0) }
+		}
+	}
+
+	public func moveTask(_ taskID: TaskItem.ID, to parent: TaskParent) async throws {
+		let task = try await getTask(id: taskID).unwrap(orThrow: ReadError.doesntExist)
+
+		let stream = try await getAllTasksStream(on: .task(hashID: task.itemHashId))
+		let subtasks: [TaskItem] = try await withThrowingTaskGroup(body: { group in
+			for try await (_, task) in stream {
+				group.addTask {
+					return task
+				}
+			}
+
+			var ids: [TaskItem] = []
+			for try await output in group {
+				ids.append(output)
+
+				let subtaskStream = try await getAllTasksStream(on: .task(hashID: output.itemHashId))
+				for try await (_, task) in subtaskStream {
+					group.addTask {
+						return task
+					}
+				}
+			}
+			return ids
+		})
+
+		let newListID: TaskList.ID
+		let newSuperTaskID: TaskItem.ID?
+		let newListUpdate: (@Sendable (TaskList) -> TaskList)?
+		let newPrevTaskID: TaskItem.ID?
+		let newPrevTaskUpdate: (@Sendable (TaskItem) -> TaskItem)?
+		let parentTaskUpdate: (@Sendable (TaskItem) -> TaskItem)?
+
+		switch parent {
+		case .list(let id):
+			newSuperTaskID = nil
+			newListID = id
+
+			if id == task.listId {
+				guard task.subtaskParentId != nil else {
+					return
+				}
+				// moving from subtask directly to list, and that's okay
+			}
+
+			_ = try await getList(id: id).unwrap(orThrow: ReadError.noMatchingList)
+			if let lastOnList = try await getLastTask(on: .list(id)) {
+				newPrevTaskID = lastOnList.id
+				newPrevTaskUpdate = { prevTask in
+					prevTask.with { $0.nextId = task.id }
+				}
+				newListUpdate = nil
+			} else {
+				newPrevTaskID = nil
+				newPrevTaskUpdate = nil
+				newListUpdate = { newList in
+					newList.with {
+						$0.firstTaskId = taskID
+					}
+				}
+			}
+			parentTaskUpdate = nil
+		case .task(let hashID):
+			let hashID = hashID.lowercased()
+			guard hashID != task.itemHashId else { throw MoveError.cannotMoveTaskToItself }
+
+			let newParentTask = try await getTask(hashID: hashID).unwrap(orThrow: ReadError.doesntExist)
+			guard newParentTask.id != task.subtaskParentId else { return }
+
+			newSuperTaskID = newParentTask.id
+
+			var checkParentage = newParentTask.subtaskParentId
+			while let parentage = checkParentage {
+				guard parentage != task.id else { throw MoveError.cannotMoveTaskToChildTask }
+				let parentTask = try await getTask(id: parentage).unwrap(orThrow: ReadError.doesntExist)
+				checkParentage = parentTask.subtaskParentId
+			}
+
+			newListUpdate = nil
+			newListID = newParentTask.listId
+
+			if let lastSubtask = try await getLastTask(on: .task(hashID: newParentTask.itemHashId)) {
+				newPrevTaskID = lastSubtask.id
+				newPrevTaskUpdate = { prevTask in
+					prevTask.with { $0.nextId = task.id }
+				}
+				parentTaskUpdate = nil
+			} else {
+				newPrevTaskID = nil
+				newPrevTaskUpdate = nil
+
+				parentTaskUpdate = { parentTask in
+					parentTask.with {
+						$0.firstSubtaskId = task.id
+					}
+				}
+			}
+		}
+		try await detachTask(task)
+		var taskUpdate = task
+
+		taskUpdate.listId = newListID
+		taskUpdate.prevId = newPrevTaskID
+		taskUpdate.nextId = nil
+		taskUpdate.subtaskParentId = newSuperTaskID
+
+		let newPreviousTask: TaskItem? = try await {
+			guard let newPrevTaskID else { return nil }
+			return try await getTask(id: newPrevTaskID)
+		}()
+		let newParentTask: TaskItem? = try await {
+			guard let newSuperTaskID else { return nil }
+			return try await getTask(id: newSuperTaskID)
+		}()
+		let newList = try await getList(id: newListID).unwrap(orThrow: ReadError.noMatchingList)
+
+		try await db.transaction { [taskUpdate] trans in
+			try trans.update(taskUpdate)
+			try newListUpdate.map {
+				let listUpdate = $0(newList)
+				try trans.update(listUpdate)
+			}
+			try newPrevTaskUpdate.map {
+				guard let newPreviousTask else { return }
+				let prevTaskUpdate = $0(newPreviousTask)
+				try trans.update(prevTaskUpdate)
+			}
+			try parentTaskUpdate.map {
+				guard let newParentTask else { return }
+				let parentTaskUpdate = $0(newParentTask)
+				try trans.update(parentTaskUpdate)
+			}
+
+			for var subtask in subtasks {
+				subtask.listId = newListID
+				try trans.update(subtask)
+			}
+		}
+	}
+
 	// MARK: - Delete
 
 	public func deleteTask(_ id: TaskItem.ID) async throws {
@@ -369,6 +552,12 @@ public struct ListController: Sendable {
 
 	public enum ReadError: Error {
 		case doesntExist
+		case noMatchingList
+	}
+
+	public enum MoveError: Error {
+		case cannotMoveTaskToItself
+		case cannotMoveTaskToChildTask
 	}
 
 	public enum DBError: Error {
