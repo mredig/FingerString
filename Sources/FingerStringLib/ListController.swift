@@ -212,12 +212,20 @@ public struct ListController: Sendable {
 		return tasks
 	}
 
-	public func getTask(hashID: String) async throws -> TaskItem? {
-		try await db.taskItems.find(by: \.itemHashId, hashID.lowercased())
+	public func getTask(hashID: String, on transaction: SQLChangeTransaction<FingerStringDB>? = nil) async throws -> TaskItem? {
+		if let transaction {
+			try transaction.taskItems.find(by: \.itemHashId, hashID.lowercased())
+		} else {
+			try await db.taskItems.find(by: \.itemHashId, hashID.lowercased())
+		}
 	}
 
-	public func getTask(id: TaskItem.ID) async throws -> TaskItem? {
-		try await db.taskItems.find(id)
+	public func getTask(id: TaskItem.ID, on transaction: SQLChangeTransaction<FingerStringDB>? = nil) async throws -> TaskItem? {
+		if let transaction {
+			try transaction.taskItems.find(id)
+		} else  {
+			try await db.taskItems.find(id)
+		}
 	}
 
 	public func getTask(index: Int, on taskParent: TaskParent) async throws -> TaskItem? {
@@ -303,7 +311,7 @@ public struct ListController: Sendable {
 
 	/// Removes a task from it's location in the linked list. The previous/next/supertask/list will all lose/bypass any references to this task.
 	/// The task itself retains all original references to original tasks as if it weren't removed at all. It will simply be an island node in the linked list.
-	private func detachTask(_ task: TaskItem) async throws {
+	private func detachTask(_ task: TaskItem) async throws -> TransactionBuilder {
 		async let oldNextTaskLoad: TaskItem? = {
 			guard let nextID = task.nextId else { return nil }
 			return try await getTask(id: nextID)
@@ -346,9 +354,7 @@ public struct ListController: Sendable {
 			builder.update(oldSuperTask)
 		}
 
-		try await db.transaction { [builder] trans in
-			try builder.executeTransactions(on: trans)
-		}
+		return builder
 	}
 
 	public func moveTask(_ taskID: TaskItem.ID, to parent: TaskParent) async throws {
@@ -448,7 +454,7 @@ public struct ListController: Sendable {
 				}
 			}
 		}
-		try await detachTask(task)
+		let detachBuilder = try await detachTask(task)
 		var taskUpdate = task
 
 		taskUpdate.listId = newListID
@@ -456,29 +462,24 @@ public struct ListController: Sendable {
 		taskUpdate.nextId = nil
 		taskUpdate.subtaskParentId = newSuperTaskID
 
-		let newPreviousTask: TaskItem? = try await {
-			guard let newPrevTaskID else { return nil }
-			return try await getTask(id: newPrevTaskID)
-		}()
-		let newParentTask: TaskItem? = try await {
-			guard let newSuperTaskID else { return nil }
-			return try await getTask(id: newSuperTaskID)
-		}()
-		let newList = try await getList(id: newListID).unwrap(orThrow: ReadError.noMatchingList)
-
 		try await db.transaction { [taskUpdate] trans in
+			try detachBuilder.executeTransactions(on: trans)
+
 			try trans.update(taskUpdate)
 			try newListUpdate.map {
+				let newList = try trans.taskLists.find(newListID).unwrapOrError(error: ReadError.noMatchingList)
 				let listUpdate = $0(newList)
 				try trans.update(listUpdate)
 			}
 			try newPrevTaskUpdate.map {
-				guard let newPreviousTask else { return }
+				guard let newPrevTaskID else { return }
+				let newPreviousTask = try trans.taskItems.find(newPrevTaskID).unwrapOrError(error: ReadError.doesntExist)
 				let prevTaskUpdate = $0(newPreviousTask)
 				try trans.update(prevTaskUpdate)
 			}
 			try parentTaskUpdate.map {
-				guard let newParentTask else { return }
+				guard let newSuperTaskID else { return }
+				let newParentTask = try trans.taskItems.find(newSuperTaskID).unwrapOrError(error: ReadError.doesntExist)
 				let parentTaskUpdate = $0(newParentTask)
 				try trans.update(parentTaskUpdate)
 			}
