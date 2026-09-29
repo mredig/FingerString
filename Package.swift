@@ -29,8 +29,8 @@ let package = Package(
 			from: "0.5.0"
 		),
 		.package(
-			url: "https://github.com/rgoldberg/swift-argument-parser.git",
-			branch: "858-bash-shopt-no-history"
+			url: "https://github.com/apple/swift-argument-parser.git",
+			from: "1.8.2"
 		), // temporary - includes fix for auto complete history spam issue
 //		.package(
 //			url: "https://github.com/apple/swift-argument-parser.git",
