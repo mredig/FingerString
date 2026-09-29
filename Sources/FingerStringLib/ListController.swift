@@ -497,61 +497,14 @@ public struct ListController: Sendable {
 		guard
 			let task = try await getTask(id: id)
 		else { return }
-		async let previousTaskLoad: TaskItem? = {
-			guard let prevId = task.prevId else { return nil }
-			return try await getTask(id: prevId)
-		}()
-		async let nextTaskLoad: TaskItem? = {
-			guard let nextId = task.nextId else { return nil }
-			return try await getTask(id: nextId)
-		}()
 
+		let detachBuilder = try await detachTask(task)
 
-		let deletion = {
-			try await db.delete(task)
+		try await db.transaction { trans in
+			try detachBuilder.executeTransactions(on: trans)
+
+			try trans.delete(task)
 		}
-
-		let previousTask = try await previousTaskLoad
-		let nextTask = try await nextTaskLoad
-
-		let taskParent = { () async throws -> TaskParent in
-			guard let parentTaskID = task.subtaskParentId else {
-				return .list(task.listId)
-			}
-			let parentTask = try await getTask(id: parentTaskID).unwrap(orThrow: ReadError.doesntExist)
-			return .task(hashID: parentTask.itemHashId)
-		}
-
-		var updates: [TaskItem] = []
-		do {
-			switch (previousTask, nextTask) {
-			case (.some(var previous), .some(var next)):
-				// middle of the list
-				previous.setNext(&next)
-				updates = [previous, next]
-			case (nil, nil):
-				// it was the only task on the list
-				try await updateRootTask(nil, on: taskParent())
-			case (nil, .some(var next)):
-				// it was the first task on the list
-				try await updateRootTask(next.id, on: taskParent())
-				next.prevId = nil
-				updates = [next]
-			case (.some(var previous), nil):
-				// it was the last task on the list
-				previous.nextId = nil
-				updates = [previous]
-			}
-		} catch {
-			print("Error cleaning up deletion: \(error)")
-			try await deletion()
-			return
-		}
-
-		for update in updates {
-			try await db.update(update)
-		}
-		try await deletion()
 	}
 
 	public func deleteList(_ id: TaskList.ID) async throws {

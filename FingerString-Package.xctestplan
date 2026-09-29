@@ -1,0 +1,43 @@
+{
+  "configurations" : [
+    {
+      "id" : "DB2743ED-C8B9-41B7-AE9B-17422C023621",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:",
+          "identifier" : "FingerStringLib",
+          "name" : "FingerStringLib"
+        },
+        {
+          "containerPath" : "container:",
+          "identifier" : "fingerstring",
+          "name" : "fingerstring"
+        }
+      ]
+    },
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:",
+      "identifier" : "fingerstring",
+      "name" : "fingerstring"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "FingerStringTests",
+        "name" : "FingerStringTests"
+      }
+    }
+  ],
+  "version" : 1
+}
