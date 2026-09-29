@@ -6,6 +6,7 @@ import Crypto
 import Foundation
 import SwiftPizzaSnips
 import SQLite3
+import Lighter
 
 public struct ListController: Sendable {
 	let db: FingerStringDB
@@ -320,27 +321,33 @@ public struct ListController: Sendable {
 			return try await getTask(id: subtaskParentID)
 		}()
 
-		var oldNextTask = try await oldNextTaskLoad
-		oldNextTask?.prevId = task.prevId
+		var builder = TransactionBuilder()
 
-		var oldPreviousTask = try await oldPreviousTaskLoad
-		oldPreviousTask?.nextId = task.nextId
-
-		var oldParentList = try await oldParentListLoad
-		if oldParentList?.firstTaskId == task.id {
-			oldParentList?.firstTaskId = oldNextTask?.id
+		let oldNextTask = try await oldNextTaskLoad
+		if var oldNextTask, oldNextTask.prevId != task.prevId {
+			oldNextTask.prevId = task.prevId
+			builder.update(oldNextTask)
 		}
 
-		var oldSuperTask = try await oldSuperTaskLoad
-		if oldSuperTask?.firstSubtaskId == task.id {
-			oldSuperTask?.firstSubtaskId = task.nextId
+		if var oldPreviousTask = try await oldPreviousTaskLoad, oldPreviousTask.nextId != task.nextId {
+			oldPreviousTask.nextId = task.nextId
+			builder.update(oldPreviousTask)
 		}
 
-		try await db.transaction { [oldNextTask, oldPreviousTask, oldParentList, oldSuperTask] trans in
-			try oldNextTask.map { try trans.update($0) }
-			try oldPreviousTask.map { try trans.update($0) }
-			try oldParentList.map { try trans.update($0) }
-			try oldSuperTask.map { try trans.update($0) }
+		let oldParentList = try await oldParentListLoad
+		if var oldParentList, oldParentList.firstTaskId == task.id {
+			oldParentList.firstTaskId = oldNextTask?.id
+			builder.update(oldParentList)
+		}
+
+		let oldSuperTask = try await oldSuperTaskLoad
+		if var oldSuperTask, oldSuperTask.firstSubtaskId == task.id {
+			oldSuperTask.firstSubtaskId = task.nextId
+			builder.update(oldSuperTask)
+		}
+
+		try await db.transaction { [builder] trans in
+			try builder.executeTransactions(on: trans)
 		}
 	}
 
@@ -572,5 +579,22 @@ public struct ListController: Sendable {
 		case notFileURL
 		case cannotCreateDB
 		case dbFileMustHaveDBExtension
+	}
+
+	private struct TransactionBuilder: Sendable {
+		private var transactionBlocks: [@Sendable (SQLChangeTransaction<FingerStringDB>) throws -> Void] = []
+
+		mutating func update<T: SQLKeyedTableRecord>(_ record: T) {
+			let block = { @Sendable (trans: SQLChangeTransaction<FingerStringDB>) throws -> Void in
+				try trans.update(record)
+			}
+			transactionBlocks.append(block)
+		}
+
+		func executeTransactions(on transaction: SQLChangeTransaction<FingerStringDB>) throws -> Void {
+			for block in transactionBlocks {
+				try block(transaction)
+			}
+		}
 	}
 }
